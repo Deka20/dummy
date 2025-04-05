@@ -391,29 +391,37 @@
     
         // Fungsi untuk menampilkan toast notifikasi
         function showToast(type, message) {
-            const toastContainer = document.getElementById('toast-container');
-            const toastId = `toast-${Date.now()}`;
-            
-            const toast = document.createElement('div');
-            toast.id = toastId;
-            toast.className = `alert alert-${type} shadow-lg mb-2 animate-fade-in`;
-            toast.innerHTML = `
-                <div>
-                    <span>${message}</span>
-                </div>
-                <button class="btn btn-sm btn-ghost" onclick="document.getElementById('${toastId}').remove()">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            toastContainer.appendChild(toast);
-            
-            // Auto remove setelah 5 detik
-            setTimeout(() => {
-                toast.classList.add('animate-fade-out');
-                setTimeout(() => toast.remove(), 300);
-            }, 5000);
-        }
+    // Buat container toast jika belum ada
+    let toastContainer = document.getElementById('toast-container');
+    if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-container';
+        toastContainer.className = 'fixed top-4 left-0 right-0 flex justify-center z-50';
+        document.body.appendChild(toastContainer);
+    }
+
+    const toastId = `toast-${Date.now()}`;
+    
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = `alert alert-${type} shadow-lg mb-2 animate-fade-in max-w-md w-full`;
+    toast.innerHTML = `
+        <div class="flex-1">
+            <span>${message}</span>
+        </div>
+        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('${toastId}').remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    // Auto remove setelah 5 detik
+    setTimeout(() => {
+        toast.classList.add('animate-fade-out');
+        setTimeout(() => toast.remove(), 300);
+    }, 5000);
+}
     </script>
 
 <script>

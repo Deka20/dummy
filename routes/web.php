@@ -19,9 +19,9 @@ use SebastianBergmann\CodeCoverage\Report\Html\Dashboard;
 
 Route::get('/', [HomeController::class, 'show'])->name('index');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-});
+// Route::get('/dashboard', function () {
+//     return view('dashboard');
+// });
 
 Route::get('/listbarang', [ListBarangController::class, 'tampilkan']);
 
@@ -115,8 +115,7 @@ Route::middleware(['auth'])->group(function () {
     // routes/web.php
 // routes/web.php
 Route::post('/bookings/{id}/request-cancel', [BookingController::class, 'requestCancel'])
-    ->name('bookings.request-cancel')
-    ->middleware('auth');
+    ->middleware('auth')->name('bookings.request-cancel');
 });
 
 Route::post('/bookings/{booking}/submit-review', [BookingController::class, 'submitReview'])

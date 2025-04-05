@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\Models\Studio;
 use App\Models\Booking;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -51,10 +52,13 @@ public function create(Request $request)
 
     // Gunakan total harga yang sudah dihitung di frontend
     $totalHarga = $validated['total_harga'];
+    $studio = Studio::findOrFail($request->studio_id);
+    $bookingId = $this->generateBookingId($studio->nama, $request->tanggal_reservasi);
 
     // Simpan data ke database
     $booking = Booking::create([
         'user_id' => $userId,
+        'booking_id' => $bookingId,
         'studio_id' => $validated['studio_id'],
         'jumlah_pelanggan' => $validated['jumlah_pelanggan'],
         'tanggal_reservasi' => $validated['tanggal_reservasi'],
@@ -64,10 +68,25 @@ public function create(Request $request)
         'status' => 'pending'
     ]);
 
-    return redirect()->route('index')
-           ->with('success', 'Reservasi berhasil dibuat! Total harga: Rp '.number_format($totalHarga, 0, ',', '.'))
-           ->with('booking_id', $booking->id);
+    return response()->json([
+        'success' => true,
+        'booking_id' => $booking->booking_id,
+    ]);
+    
 }
+
+private function generateBookingId($studioName, $tanggal)
+{
+    $studioCode = collect(explode(' ', $studioName))->map(function ($word) {
+        return strtoupper(substr($word, 0, 1));
+    })->implode('');
+
+    $dateCode = Carbon::parse($tanggal)->format('Ymd');
+    $random = strtoupper(Str::random(5));
+
+    return "BK-$dateCode-$studioCode-$random";
+}
+
 
 
 public function store(Request $request)

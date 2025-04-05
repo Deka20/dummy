@@ -50,8 +50,7 @@ class AuthController extends Controller
             // Tambahkan data user lainnya jika diperlukan
             $request->session()->put('user_name', Auth::user()->name);
             
-            return redirect()->intended('/')
-                   ->with('success', 'Login berhasil!');
+            return redirect()->route('index')->with('success', 'Login berhasil!');
         }
     
         return back()->withErrors([

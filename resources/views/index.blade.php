@@ -210,182 +210,226 @@ $studios = Studio::all();
 @endphp
 
 @foreach($studios as $studio)
-<!-- Card Studio -->
 <div class="relative">
-    <!-- Tombol/Element untuk membuka modal -->
-    <div 
-        class="card bg-base-100 shadow-xl w-96 md:w-80 rounded-2xl overflow-hidden cursor-pointer"
-        onclick="document.getElementById('studio_modal_{{ $studio->id }}').showModal()">
-        <figure>
-          <img
-          src="{{ asset('storage/' . $studio->cover_studio) }}"
-          alt="{{ $studio->nama }}"
-          class="w-full h-64 object-cover"
-      />
-        </figure>
-        <div class="absolute bottom-4 left-4">
-            <button class="btn btn-sm rounded-xl">Rp{{ number_format($studio->harga_per_jam, 0, ',', '.') }}/Hours</button>
-        </div>
-    </div>
-    
-    <div class="mt-2">
-        <h1 class="font-bold">{{ $studio->nama }}</h1>
-        <p>{{ $studio->deskripsi }}</p>
-    </div>
+  <!-- Kartu Studio -->
+  <div class="card bg-base-100 shadow-xl w-96 md:w-80 rounded-2xl overflow-hidden cursor-pointer"
+       onclick="document.getElementById('studio_modal_{{ $studio->id }}').showModal()">
+      <figure>
+          <img src="{{ asset('storage/' . $studio->cover_studio) }}"
+               alt="{{ $studio->nama }}"
+               class="w-full h-64 object-cover"/>
+      </figure>
+      <div class="absolute bottom-4 left-4">
+          <button class="btn btn-sm rounded-xl">Rp{{ number_format($studio->harga_per_jam, 0, ',', '.') }}/Jam</button>
+      </div>
+  </div>
 
-    <!-- Modal -->
-    <dialog id="studio_modal_{{ $studio->id }}" class="modal">
-        <div class="modal-box">
-            <form method="dialog">
-                <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
-            </form>
-            <h3 class="text-lg font-bold">Booking Form for: {{ $studio->nama }}</h3>
-            <div class="py-4 space-y-4">
-                <img
-                    src="{{ asset('storage/' . $studio->cover_studio) }}"
-                    alt="{{ $studio->nama }}"
-                    class="rounded-lg w-full h-64 object-cover"
-                />
+  <div class="mt-2">
+      <h1 class="font-bold">{{ $studio->nama }}</h1>
+      <p>{{ $studio->deskripsi }}</p>
+  </div>
 
-                <form method="POST" action="{{ route('bookings.create') }}">
-                    @csrf
-                    <!-- Input hidden untuk studio_id -->
-                    <input type="hidden" name="studio_id" value="{{ $studio->id }}">
-                    <input type="hidden" name="harga_per_jam" value="{{ $studio->harga_per_jam }}">
-                    <input type="hidden" name="biaya_per_pelanggan" value="5000">
-                    
-                    <!-- Tambahan input hidden untuk harga total -->
-                    <input type="hidden" name="total_harga" id="input_total_harga_{{ $studio->id }}" value="{{ $studio->harga_per_jam + 5000 }}">
-                    
-                    <div class="form-control mb-4">
-                        <label class="label">Jumlah Pelanggan</label>
-                        <input 
-                            type="number" 
-                            name="jumlah_pelanggan" 
-                            min="1" 
-                            max="10" 
-                            value="1"
-                            class="input input-bordered" 
-                            required
-                            onchange="hitungTotal{{ $studio->id }}()"
-                            id="jumlah_pelanggan_{{ $studio->id }}"
-                        >
-                        <span class="text-xs text-gray-500 mt-1">*Biaya tambahan Rp5.000 per pelanggan</span>
-                    </div>
-                  
-                    <div class="form-control mb-4">
-                        <label class="label">Tanggal Reservasi</label>
-                        <input type="date" name="tanggal_reservasi" min="{{ date('Y-m-d') }}" class="input input-bordered" required>
-                    </div>
-                  
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium mb-2">Waktu Reservasi</label>
-                        <div class="grid grid-cols-3 gap-2">
-                            @for($hour = 9; $hour <= 21; $hour++)
-                                <label class="flex items-center space-x-2 border rounded-lg p-3 cursor-pointer">
-                                    <input type="radio" name="waktu_reservasi" 
-                                           value="{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00" 
-                                           class="radio radio-primary" required>
-                                    <span>{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00</span>
-                                </label>
-                            @endfor
-                        </div>
-                    </div>
+  <!-- Modal Booking -->
+  <dialog id="studio_modal_{{ $studio->id }}" class="modal">
+      <div class="modal-box">
+          <form method="dialog">
+              <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+          </form>
+          <h3 class="text-lg font-bold">Booking Form for: {{ $studio->nama }}</h3>
+          <div class="py-4 space-y-4">
+              <img src="{{ asset('storage/' . $studio->cover_studio) }}"
+                   class="rounded-lg w-full h-64 object-cover"
+                   alt="{{ $studio->nama }}" />
 
-                    <div class="mb-6">
-                        <label class="block text-sm font-medium mb-2">Durasi (Jam)</label>
-                        <div class="flex space-x-4">
-                            @foreach([1, 2, 3] as $durasi)
-                                <label class="flex-1 flex flex-col items-center border rounded-lg p-4 cursor-pointer">
-                                    <div class="flex items-center space-x-2 mb-2">
-                                        <input 
-                                            type="radio" 
-                                            name="durasi_jam" 
-                                            value="{{ $durasi }}" 
-                                            class="radio radio-primary durasi-radio-{{ $studio->id }}" 
-                                            required
-                                            onclick="hitungTotal{{ $studio->id }}()"
-                                            @if($durasi == 1) checked @endif
-                                        >
-                                        <span class="text-lg font-medium">{{ $durasi }} Jam</span>
-                                    </div>
-                                    <span class="text-sm text-gray-500">
-                                        Rp{{ number_format($studio->harga_per_jam * $durasi, 0, ',', '.') }}
-                                    </span>
-                                </label>
-                            @endforeach
-                        </div>
-                    </div>
+              <form method="POST" action="{{ route('bookings.create') }}" id="bookingForm_{{ $studio->id }}">
+                  @csrf
+                  <input type="hidden" name="studio_id" value="{{ $studio->id }}">
+                  <input type="hidden" name="harga_per_jam" value="{{ $studio->harga_per_jam }}">
+                  <input type="hidden" name="biaya_per_pelanggan" value="5000">
+                  <input type="hidden" name="booking_id" id="booking_id_{{ $studio->id }}">
+                  <input type="hidden" name="total_harga" id="input_total_harga_{{ $studio->id }}">
 
-                    <div class="p-4 border rounded-lg bg-gray-50 mb-6">
-                        <h4 class="font-medium text-gray-700 mb-2">Rincian Harga:</h4>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span>Harga Studio:</span>
-                            <span id="harga_studio_{{ $studio->id }}">Rp{{ number_format($studio->harga_per_jam, 0, ',', '.') }}</span>
-                        </div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span>Biaya Pelanggan:</span>
-                            <span id="biaya_pelanggan_{{ $studio->id }}">Rp{{ number_format(5000, 0, ',', '.') }}</span>
-                        </div>
-                        <div class="border-t pt-2 mt-2 flex justify-between font-medium">
-                            <span>Total:</span>
-                            <span id="total_harga_{{ $studio->id }}">Rp{{ number_format($studio->harga_per_jam + 5000, 0, ',', '.') }}</span>
-                        </div>
-                    </div>
+                  <div class="form-control mb-4">
+                      <label class="label">Jumlah Pelanggan</label>
+                      <input type="number" name="jumlah_pelanggan" min="1" max="10" value="1"
+                             class="input input-bordered" required
+                             onchange="hitungTotal({{ $studio->id }})"
+                             id="jumlah_pelanggan_{{ $studio->id }}">
+                      <span class="text-xs text-gray-500 mt-1">*Biaya tambahan Rp5.000 per pelanggan</span>
+                  </div>
 
-                    <div class="modal-action mt-6">
-                        <button type="submit" class="btn btn-primary w-full gap-2">
-                            <i class="fas fa-calendar-check"></i>
-                            Pesan Sekarang
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </dialog>
+                  <div class="form-control mb-4">
+                      <label class="label">Tanggal Reservasi</label>
+                      <input type="date" name="tanggal_reservasi" min="{{ date('Y-m-d') }}" class="input input-bordered" required>
+                  </div>
+
+                  <div class="mb-6">
+                      <label class="block text-sm font-medium mb-2">Waktu Reservasi</label>
+                      <div class="grid grid-cols-3 gap-2">
+                          @for($hour = 9; $hour <= 21; $hour++)
+                              <label class="flex items-center space-x-2 border rounded-lg p-3 cursor-pointer">
+                                  <input type="radio" name="waktu_reservasi"
+                                         value="{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00"
+                                         class="radio radio-primary" required>
+                                  <span>{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00</span>
+                              </label>
+                          @endfor
+                      </div>
+                  </div>
+
+                  <div class="mb-6">
+                      <label class="block text-sm font-medium mb-2">Durasi (Jam)</label>
+                      <div class="flex space-x-4">
+                          @foreach([1, 2, 3] as $durasi)
+                              <label class="flex-1 flex flex-col items-center border rounded-lg p-4 cursor-pointer">
+                                  <div class="flex items-center space-x-2 mb-2">
+                                      <input type="radio" name="durasi_jam"
+                                             value="{{ $durasi }}"
+                                             class="radio radio-primary durasi-radio-{{ $studio->id }}"
+                                             required
+                                             onclick="hitungTotal({{ $studio->id }})"
+                                             @if($durasi == 1) checked @endif>
+                                      <span class="text-lg font-medium">{{ $durasi }} Jam</span>
+                                  </div>
+                                  <span class="text-sm text-gray-500">
+                                      Rp{{ number_format($studio->harga_per_jam * $durasi, 0, ',', '.') }}
+                                  </span>
+                              </label>
+                          @endforeach
+                      </div>
+                  </div>
+
+                  <div class="p-4 border rounded-lg bg-gray-50 mb-6">
+                      <h4 class="font-medium text-gray-700 mb-2">Rincian Harga:</h4>
+                      <div class="flex justify-between text-sm mb-1">
+                          <span>Harga Studio:</span>
+                          <span id="harga_studio_{{ $studio->id }}"></span>
+                      </div>
+                      <div class="flex justify-between text-sm mb-1">
+                          <span>Biaya Pelanggan:</span>
+                          <span id="biaya_pelanggan_{{ $studio->id }}"></span>
+                      </div>
+                      <div class="border-t pt-2 mt-2 flex justify-between font-medium">
+                          <span>Total:</span>
+                          <span id="total_harga_{{ $studio->id }}"></span>
+                      </div>
+                  </div>
+
+                  <div class="modal-action mt-6">
+                      <button type="button" class="btn btn-primary w-full gap-2"
+                              onclick="submitBookingForm({{ $studio->id }})">
+                          <i class="fas fa-calendar-check"></i> Pesan Sekarang
+                      </button>
+                  </div>
+              </form>
+          </div>
+      </div>
+  </dialog>
+
+  <!-- Modal Konfirmasi -->
+  <dialog id="confirmation_modal_{{ $studio->id }}" class="modal">
+      <div class="modal-box text-center">
+          <div class="flex flex-col items-center">
+              <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                  </svg>
+              </div>
+              <h3 class="text-lg font-bold">Booking Berhasil!</h3>
+              <p class="text-sm text-gray-600 mb-4">Detail pemesanan Anda dapat dilihat di menu Purchase History.</p>
+
+              <div class="text-sm text-left w-full border p-4 rounded mb-4">
+                  <div class="flex justify-between"><span>Booking ID:</span><span id="confirmation_booking_id_{{ $studio->id }}"></span></div>
+                  <div class="flex justify-between"><span>Studio:</span><span>{{ $studio->nama }}</span></div>
+                  <div class="flex justify-between"><span>Tanggal:</span><span id="confirmation_date_{{ $studio->id }}"></span></div>
+                  <div class="flex justify-between"><span>Waktu:</span><span id="confirmation_time_{{ $studio->id }}"></span></div>
+                  <div class="flex justify-between"><span>Durasi:</span><span id="confirmation_duration_{{ $studio->id }}"></span></div>
+                  <div class="flex justify-between"><span>Jumlah Orang:</span><span id="confirmation_people_{{ $studio->id }}"></span></div>
+                  <div class="flex justify-between border-t pt-2 mt-2"><span>Total:</span><span class="text-primary font-bold" id="confirmation_total_{{ $studio->id }}"></span></div>
+              </div>
+
+              <div class="flex gap-2 w-full">
+                  <button class="btn btn-ghost flex-1" onclick="document.getElementById('confirmation_modal_{{ $studio->id }}').close()">Tutup</button>
+                  <button class="btn btn-primary flex-1 gap-2" onclick="printBookingDetails({{ $studio->id }})"><i class="fas fa-print"></i> Cetak</button>
+              </div>
+          </div>
+      </div>
+  </dialog>
 </div>
 
 <script>
-// Menyiapkan script untuk setiap studio
-document.addEventListener('DOMContentLoaded', function() {
-    // Set nilai awal
-    hitungTotal{{ $studio->id }}();
+document.addEventListener('DOMContentLoaded', function () {
+    hitungTotal({{ $studio->id }});
 });
 
-function hitungTotal{{ $studio->id }}() {
-    // Ambil nilai input
-    const jumlahPelanggan = document.getElementById('jumlah_pelanggan_{{ $studio->id }}').value;
+function hitungTotal(studioId) {
+    const pelanggan = parseInt(document.getElementById(`jumlah_pelanggan_${studioId}`).value) || 0;
+    const durasi = parseInt(document.querySelector(`.durasi-radio-${studioId}:checked`)?.value) || 1;
     const hargaPerJam = {{ $studio->harga_per_jam }};
     const biayaPerPelanggan = 5000;
-    
-    // Cari durasi yang dipilih
-    let durasi = 1; // Default 1 jam
-    const durasiInputs = document.getElementsByClassName('durasi-radio-{{ $studio->id }}');
-    for (let i = 0; i < durasiInputs.length; i++) {
-        if (durasiInputs[i].checked) {
-            durasi = parseInt(durasiInputs[i].value);
-            break;
+
+    const totalStudio = hargaPerJam * durasi;
+    const totalPelanggan = biayaPerPelanggan * pelanggan;
+    const total = totalStudio + totalPelanggan;
+
+    document.getElementById(`harga_studio_${studioId}`).textContent = 'Rp' + totalStudio.toLocaleString('id-ID');
+    document.getElementById(`biaya_pelanggan_${studioId}`).textContent = 'Rp' + totalPelanggan.toLocaleString('id-ID');
+    document.getElementById(`total_harga_${studioId}`).textContent = 'Rp' + total.toLocaleString('id-ID');
+    document.getElementById(`input_total_harga_${studioId}`).value = total;
+}
+
+async function submitBookingForm(studioId) {
+    const form = document.getElementById('bookingForm_' + studioId);
+    const formData = new FormData(form);
+
+    try {
+        const response = await fetch("{{ route('bookings.create') }}", {
+            method: 'POST',
+            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById('studio_modal_' + studioId).close();
+            document.getElementById('confirmation_modal_' + studioId).showModal();
+
+            document.getElementById('confirmation_booking_id_' + studioId).textContent = result.booking_id;
+            document.getElementById('confirmation_date_' + studioId).textContent = formData.get('tanggal_reservasi');
+            document.getElementById('confirmation_time_' + studioId).textContent = formData.get('waktu_reservasi');
+            document.getElementById('confirmation_duration_' + studioId).textContent = formData.get('durasi_jam') + ' Jam';
+            document.getElementById('confirmation_people_' + studioId).textContent = formData.get('jumlah_pelanggan') + ' Orang';
+            document.getElementById('confirmation_total_' + studioId).textContent = 'Rp' + parseInt(formData.get('total_harga')).toLocaleString('id-ID');
+        } else {
+            alert('Gagal menyimpan booking.');
         }
+    } catch (error) {
+        console.error(error);
+        alert('Terjadi error saat mengirim booking.');
     }
-    
-    // Hitung biaya
-    const biayaStudio = hargaPerJam * durasi;
-    const biayaPelanggan = biayaPerPelanggan * jumlahPelanggan;
-    const totalBiaya = biayaStudio + biayaPelanggan;
-    
-    // Update nilai hidden input untuk total harga
-    document.getElementById('input_total_harga_{{ $studio->id }}').value = totalBiaya;
-    
-    // Update teks
-    document.getElementById('harga_studio_{{ $studio->id }}').textContent = 
-        'Rp' + biayaStudio.toLocaleString('id-ID').replace(/\./g, ',');
-    document.getElementById('biaya_pelanggan_{{ $studio->id }}').textContent = 
-        'Rp' + biayaPelanggan.toLocaleString('id-ID').replace(/\./g, ',');
-    document.getElementById('total_harga_{{ $studio->id }}').textContent = 
-        'Rp' + totalBiaya.toLocaleString('id-ID').replace(/\./g, ',');
+}
+
+function printBookingDetails(studioId) {
+    const win = window.open('', '_blank');
+    const bookingHTML = `
+        <h2>Booking Confirmation</h2>
+        <p><strong>ID:</strong> ${document.getElementById('confirmation_booking_id_' + studioId).textContent}</p>
+        <p><strong>Studio:</strong> {{ $studio->nama }}</p>
+        <p><strong>Tanggal:</strong> ${document.getElementById('confirmation_date_' + studioId).textContent}</p>
+        <p><strong>Waktu:</strong> ${document.getElementById('confirmation_time_' + studioId).textContent}</p>
+        <p><strong>Durasi:</strong> ${document.getElementById('confirmation_duration_' + studioId).textContent}</p>
+        <p><strong>Jumlah Orang:</strong> ${document.getElementById('confirmation_people_' + studioId).textContent}</p>
+        <p><strong>Total:</strong> ${document.getElementById('confirmation_total_' + studioId).textContent}</p>
+    `;
+    win.document.write(`<html><head><title>Print Booking</title></head><body>${bookingHTML}</body></html>`);
+    win.document.close();
+    win.print();
 }
 </script>
 @endforeach
+
+
 
   </div>
   {{-- Studio Section End --}}

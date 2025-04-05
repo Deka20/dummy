@@ -40,7 +40,7 @@
                     <input 
                         type="text" 
                         name="name" 
-                        placeholder="John Doe" 
+                        placeholder="Full Name" 
                         class="input input-bordered w-full bg-white @error('name') input-error @enderror"
                         value="{{ old('name') }}"
                         required
@@ -60,7 +60,7 @@
                     <input 
                         type="text" 
                         name="username" 
-                        placeholder="johndoe123" 
+                        placeholder="Username" 
                         class="input input-bordered w-full bg-white @error('username') input-error @enderror"
                         value="{{ old('username') }}"
                         required>

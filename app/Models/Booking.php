@@ -24,7 +24,8 @@ class Booking extends Model
         'status',
         'rating',
         'review',
-        'reviewed_at'
+        'reviewed_at',
+        'booking_id'
     ];
 
     public function user()

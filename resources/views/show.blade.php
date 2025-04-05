@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
   @vite('resources/css/app.css')
   <title>Studio Lens</title>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
@@ -149,7 +150,9 @@
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">
             Detail Reservasi 
-            <span class="text-primary">#{{ strtoupper(substr($booking->studio->nama, 0, 3)) }}-{{ date('Ymd', strtotime($booking->created_at)) }}-{{ sprintf('%04d', $booking->id) }}</span>
+            <span class="text-primary font-mono text-lg">
+              #{{ $booking->booking_id }}
+          </span>
         </h1>
         <span class="badge {{ $booking->status === 'confirmed' ? 'badge-success' : ($booking->status === 'completed' ? 'badge-primary' : 'badge-warning') }} gap-2">
             {{ ucfirst($booking->status) }}
@@ -301,11 +304,12 @@
             <!-- Actions -->
             <div class="card-actions justify-end mt-6">
                 @if($booking->status == 'pending')
-                <button class="btn btn-error gap-2 cancel-booking" data-booking-id="{{ $booking->id }}">
-                    <i class="fas fa-times"></i>
-                    Batalkan Reservasi
-                </button>
-                <a href="{{ route('bookings.edit', $booking->id) }}" class="btn btn-primary gap-2">
+                <button class="btn btn-error gap-2 cancel-booking-btn"
+        data-booking-id="{{ $booking->id }}">
+        <i class="fas fa-times"></i>
+        Batalkan Reservasi
+    </button>
+                <a href="{{ route('show', $booking->id) }}" class="btn btn-primary gap-2">
                     <i class="fas fa-edit"></i>
                     Ubah Reservasi
                 </a>
@@ -318,25 +322,143 @@
             </div>
         </div>
     </div>
+
+    <div id="toast" class="hidden fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
+      <span id="toast-message"></span>
+  </div>
 </div>
 
 <!-- Cancel Booking Modal -->
 <dialog id="cancelModal" class="modal">
-    <div class="modal-box">
-        <h3 class="font-bold text-lg">Konfirmasi Pembatalan</h3>
-        <p class="py-4">Apakah Anda yakin ingin membatalkan reservasi ini?</p>
-        <div class="modal-action">
-            <form method="dialog">
-                <button class="btn">Tutup</button>
-            </form>
-            <form id="cancelForm" method="POST" action="">
-                @csrf
-                @method('PATCH')
-                <button type="submit" class="btn btn-error">Ya, Batalkan</button>
-            </form>
-        </div>
-    </div>
+  <div class="modal-box">
+      <h3 class="font-bold text-lg">Konfirmasi Pembatalan</h3>
+      <p class="py-4">Apakah Anda yakin ingin membatalkan reservasi ini?</p>
+      <div class="modal-action">
+          <form method="dialog">
+              <button class="btn">Tutup</button>
+          </form>
+          <button id="confirmCancelBtn" class="btn btn-error">Ya, Batalkan</button>
+      </div>
+  </div>
 </dialog>
+
+<script>
+  let currentBookingId = null;
+  const cancelModal = document.getElementById('cancelModal');
+  const confirmCancelBtn = document.getElementById('confirmCancelBtn');
+
+  // Handle click tombol "Batalkan Reservasi"
+  document.querySelectorAll('.cancel-booking-btn').forEach(button => {
+      button.addEventListener('click', () => {
+          currentBookingId = button.dataset.bookingId;
+          cancelModal.showModal();
+      });
+  });
+
+  // Handle submit tombol dalam modal
+  confirmCancelBtn.addEventListener('click', requestCancelBooking);
+
+  async function requestCancelBooking() {
+      if (!currentBookingId) return;
+
+      try {
+          confirmCancelBtn.disabled = true;
+          confirmCancelBtn.innerHTML = '<span class="loading loading-spinner"></span> Memproses...';
+
+          const response = await fetch(`/bookings/${currentBookingId}/request-cancel`, {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                  'Accept': 'application/json'
+              }
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+              throw new Error(data.message || 'Gagal memproses permintaan pembatalan');
+          }
+
+          if (data.success) {
+              updateBookingStatus(currentBookingId, 'request_cancel');
+              showToast('success', data.message);
+              // Disable tombol cancel
+              const btn = document.querySelector(`.cancel-booking-btn[data-booking-id="${currentBookingId}"]`);
+              if (btn) btn.remove(); // atau btn.disabled = true;
+          } else {
+              showToast('error', data.message);
+          }
+      } catch (error) {
+          console.error('Error:', error);
+          showToast('error', error.message);
+      } finally {
+          confirmCancelBtn.disabled = false;
+          confirmCancelBtn.textContent = 'Ya, Batalkan';
+          cancelModal.close();
+      }
+  }
+
+  function updateBookingStatus(bookingId, newStatus) {
+      const badge = document.querySelector(`.status-badge[data-booking-id="${bookingId}"]`);
+      if (badge) {
+          badge.className = `badge ${getStatusClass(newStatus)} gap-2 status-badge`;
+          badge.textContent = formatStatusText(newStatus);
+      }
+  }
+
+  function getStatusClass(status) {
+      switch (status) {
+          case 'pending': return 'badge-warning';
+          case 'confirmed': return 'badge-success';
+          case 'request_cancel': return 'badge-error';
+          default: return 'badge-ghost';
+      }
+  }
+
+  function formatStatusText(status) {
+      switch (status) {
+          case 'pending': return 'Menunggu';
+          case 'confirmed': return 'Terkonfirmasi';
+          case 'request_cancel': return 'Dibatalkan';
+          default: return status;
+      }
+  }
+
+  function showToast(type, message) {
+    const toastContainer = document.getElementById('toast-container') || createToastContainer();
+    const toast = document.createElement('div');
+    
+    toast.className = `toast toast-top`; // Hanya toast-top untuk posisi tengah atas
+    toast.style.margin = '0 auto';
+    toast.style.left = '0';
+    toast.style.right = '0';
+    toast.style.width = 'fit-content';
+    
+    toast.innerHTML = `
+        <div class="alert alert-${type}">
+            <div>
+                <span>${message}</span>
+            </div>
+        </div>
+    `;
+    
+    toastContainer.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+
+  function createToastContainer() {
+      const container = document.createElement('div');
+      container.id = 'toast-container';
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+      return container;
+  }
+</script>
+
 
 <script>
     // Theme switcher remains the same
