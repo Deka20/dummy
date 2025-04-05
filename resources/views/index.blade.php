@@ -87,10 +87,10 @@
       </div>
     @else
       {{-- Tampilkan tombol login dan register jika user belum login --}}
-      <a href="{{ route('register') }}" class="text-primary font-medium hover:underline">
+      <a href="{{ route('register') }}" class="btn btn-ghost rounded-3xl text-primary font-medium hover:underline">
         Sign up
       </a>
-      <a href="{{ route('login') }}"><button class="btn bg-primary text-white rounded-md">Login</button></a>
+      <a href="{{ route('login') }}"><button class="btn bg-primary text-white rounded-3xl">Login</button></a>
     @endauth
   </div>
 </div>
@@ -434,35 +434,62 @@ function printBookingDetails(studioId) {
   </div>
   {{-- Studio Section End --}}
 
-  {{-- Portofolio Section --}}
-  <h1 class="text-center text-3xl font-bold mt-20">Our Works</h1>
+  <!-- Portfolio Section -->
+<section class="py-20">
+  <div class="container mx-auto px-4">
+      <h1 class="text-center text-4xl font-bold mb-16 text-gray-800">Our Works</h1>
 
-  <div class="carousel carousel-center rounded-box w-full mt-2">
-    <!-- Carousel items with smaller images -->
-    <div class="carousel-item w-full max-w-sm h-120">
-      <img src="https://i.pinimg.com/736x/5a/43/f2/5a43f2ce1d97dcd421e143f8af0d7b9f.jpg" alt="Pizza" class="w-full h-full object-cover" />
-    </div>
-    <div class="carousel-item w-full max-w-sm h-120">
-      <img src="https://i.pinimg.com/736x/3e/a5/28/3ea528de6bf87b2355ec2dfa12466cf2.jpg" alt="Pizza" class="w-full h-full object-cover" />
-    </div>
-    <div class="carousel-item w-full max-w-sm h-120">
-      <img src="https://i.pinimg.com/736x/e5/62/91/e562915e7924c26cb987a2cf17a0df8b.jpg" alt="Pizza" class="w-full h-full object-cover" />
-    </div>
-    <div class="carousel-item w-full max-w-sm h-120">
-      <img src="https://i.pinimg.com/736x/fc/99/6b/fc996b12c0597d22c5864932ee26ebef.jpg" alt="Pizza" class="w-full h-full object-cover" />
-    </div>
-    <div class="carousel-item w-full max-w-sm h-120">
-      <img src="https://i.pinimg.com/736x/29/65/46/2965465644ad9029072e88867a54ae7f.jpg" alt="Pizza" class="w-full h-full object-cover" />
-    </div>
-    <div class="carousel-item w-full max-w-sm h-120">
-      <img src="https://i.pinimg.com/736x/f5/19/d4/f519d497c0aa810919c6cce85a83f44b.jpg" alt="Pizza" class="w-full h-full object-cover" />
-    </div>
-    <div class="carousel-item w-full max-w-sm h-120">
-      <img src="https://i.pinimg.com/736x/2c/1d/f8/2c1df8cc97600f808a70ec11d5757b8c.jpg" alt="Pizza" class="w-full h-full object-cover" />
-    </div>
-</div>
+      @php
+          $portfolioItems = App\Models\Portfolio::orderBy('order', 'asc')->get();
+      @endphp
+
+      @if($portfolioItems->isNotEmpty())
+          <!-- Polaroid Gallery Layout -->
+          <div class="flex flex-wrap justify-center gap-8 px-4">
+              @foreach($portfolioItems as $index => $item)
+                  @php
+                      $rotation = match($index % 4) {
+                          0 => '-rotate-3',
+                          1 => 'rotate-1',
+                          2 => '-rotate-2',
+                          3 => 'rotate-2',
+                          default => 'rotate-0'
+                      };
+                  @endphp
+                  
+                  <div class="w-80 h-105 bg-white p-4 pb-16 shadow-lg transform {{ $rotation }} hover:rotate-0 transition-all duration-300">
+                      <!-- Simplified image section -->
+                      <img src="{{ $item->image_url }}" 
+                           class="w-full h-[115%] object-cover"
+                           alt="{{ $item->title ?? 'Portfolio image' }}">
+                      
+                      @if($item->title)
+                          <div class="text-center mt-4 font-handlee text-xl text-gray-700">
+                              {{ $item->title }}
+                          </div>
+                      @endif
+                  </div>
+              @endforeach
+          </div>
+      @else
+          <div class="text-center text-gray-500 py-12">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p class="mt-4 text-lg">No portfolio items have been added yet.</p>
+          </div>
+      @endif
   </div>
-  {{-- Portofolio Section End --}}
+</section>
+
+@push('styles')
+<link href="https://fonts.googleapis.com/css2?family=Handlee&display=swap" rel="stylesheet">
+<style>
+    .font-handlee {
+        font-family: 'Handlee', cursive;
+    }
+</style>
+@endpush
 
 {{-- Rating Section --}}
 <h1 class="text-center text-3xl font-bold mt-20">Ratings & Reviews</h1>
@@ -625,7 +652,7 @@ $editingReviewId = request()->query('edit'); // Ambil ID dari query param ?edit=
 @else
 <p class="text-center text-gray-500">No reviews yet.</p>
 @endif
-
+</div>  
 
 
 

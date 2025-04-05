@@ -58,6 +58,8 @@ Route::prefix('dashboard')->name('dashboard.')->group(function () {
 
     Route::get('/customers', [DashboardController::class, 'customers'])->name('customers');
 
+    Route::get('/settings', [DashboardController::class, 'settings'])->name('settings');
+
     // Route untuk menyimpan studio baru (dari form create)
     Route::post('/store', [StudioController::class, 'store'])->name('store');
 
@@ -128,3 +130,11 @@ Route::get('/bookings/{booking}', [BookingController::class, 'show'])
 
      Route::put('/reviews/{booking}', [BookingController::class, 'update'])->name('reviews.update')->middleware('auth');
      Route::delete('/reviews/{booking}', [BookingController::class, 'destroy'])->name('reviews.destroy')->middleware('auth');
+
+
+     Route::get('/dashboard/portfolio', [DashboardController::class, 'settings'])->name('dashboard.settings');
+
+// Portfolio management routes
+Route::post('/dashboard/portfolio/save', [DashboardController::class, 'save'])->name('dashboard.portfolio.save');
+Route::delete('/dashboard/portfolio/delete/{id}', [DashboardController::class, 'delete'])->name('dashboard.portfolio.delete');
+Route::post('/dashboard/portfolio/update-order', [DashboardController::class, 'updateOrder'])->name('dashboard.portfolio.update-order');
