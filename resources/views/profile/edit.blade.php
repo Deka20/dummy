@@ -75,7 +75,7 @@
                 </svg>
                 <span class="text-gray-800 hover:text-blue-600">Preferensi & Tampilan</span>
               </a>
-              <a href="{{ route('settings.notifications') }}" 
+              <a href="{{ route('purchase.history') }}" 
                  class="px-6 py-4 text-sm font-medium hover:bg-gray-50 flex items-center transition-colors duration-200 h-full">
                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 mr-3 text-gray-600" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/><path d="M14 3v5h5M16 13H8M16 17H8M10 9H8"/></svg>
                 <span class="text-gray-800 hover:text-blue-600">Purchase History</span>
@@ -90,7 +90,7 @@
               </a>
               <form method="POST" action="{{ route('logout') }}" class="pt-2">
                 @csrf
-                <button type="submit" class="btn btn-ghost text-gray-800 rounded-2xl hover:bg-red-500 w-full">
+                <button type="submit" class="btn btn-ghost text-gray-800 rounded-3xl hover:bg-red-500 w-full">
                     <svg class="w-5 h-5 mr-3 text-gray-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M13.8 12H3"/></svg>
                     Logout</button>
               </form>
@@ -172,8 +172,8 @@
           
           <!-- Submit Button -->
           <div class="flex justify-end gap-4 pt-6">
-            <a href="/" class="btn rounded-2xl btn-ghost">Cancel</a>
-            <button type="submit" class="btn rounded-2xl btn-primary">
+            <a href="/" class="btn rounded-3xl btn-ghost text-red-500">Cancel</a>
+            <button type="submit" class="btn rounded-3xl btn-primary">
               <span class="check" id="spinner"></span>
               Save Changes
             </button>

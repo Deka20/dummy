@@ -247,4 +247,41 @@ public function destroy(Booking $booking)
 
     return redirect()->route('index')->with('success', 'Review deleted.');
 }
+
+public function updateBooking(Request $request, Booking $booking)
+{
+    // Validasi kepemilikan booking
+    if ($booking->user_id != Auth::id()) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthorized action'
+        ], 403);
+    }
+
+    // Validasi input
+    $validated = $request->validate([
+        'date' => 'required|date|after_or_equal:today',
+        'time' => 'required',
+    ]);
+
+    try {
+        // Update data booking
+        $booking->update([
+            'tanggal_reservasi' => $validated['date'],
+            'waktu_reservasi' => $validated['time'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Reservasi berhasil diperbarui',
+            'booking' => $booking
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }

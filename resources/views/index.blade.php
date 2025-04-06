@@ -149,7 +149,7 @@
     <div class="hero-content flex-col lg:flex-row-reverse px-4 py-6 lg:px-16 lg:py-16">
       <img
       src="https://i.pinimg.com/736x/f5/ae/7d/f5ae7df196a797c96104311778212593.jpg"
-      class="max-w-full lg:max-w-lg rounded-2xl shadow-[0px_0px_20px_10px_rgba(0,0,0,0.2)] mb-6 lg:mb-0"/>  
+      class="max-w-full lg:max-w-lg rounded-2xl shadow-[0px_0px_20px_10px_rgba(0,0,0,0.2)] mb-6 lg:mb-0 transform transition-transform duration-300 hover:scale-105"/>  
       <div class="text-center lg:text-left">
         <h1 class="text-3xl lg:text-5xl font-bold leading-tight">Professional Studio Space for Your Perfect Shot</h1>
         <p class="py-6 text-base lg:text-xl">
@@ -212,7 +212,7 @@ $studios = Studio::all();
 @foreach($studios as $studio)
 <div class="relative">
   <!-- Kartu Studio -->
-  <div class="card bg-base-100 shadow-xl w-96 md:w-80 rounded-2xl overflow-hidden cursor-pointer"
+  <div class="card bg-base-100 shadow-xl w-96 md:w-80 rounded-2xl overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105"
        onclick="document.getElementById('studio_modal_{{ $studio->id }}').showModal()">
       <figure>
           <img src="{{ asset('storage/' . $studio->cover_studio) }}"
@@ -250,13 +250,71 @@ $studios = Studio::all();
                   <input type="hidden" name="total_harga" id="input_total_harga_{{ $studio->id }}">
 
                   <div class="form-control mb-4">
-                      <label class="label">Jumlah Pelanggan</label>
-                      <input type="number" name="jumlah_pelanggan" min="1" max="10" value="1"
-                             class="input input-bordered" required
-                             onchange="hitungTotal({{ $studio->id }})"
+                    <label class="label">Jumlah Pelanggan</label>
+                    <div class="flex items-center gap-2">
+                      <button type="button" 
+                              class="btn btn-circle btn-sm decrement-btn"
+                              onclick="adjustCustomerCount('{{ $studio->id }}', -1)">
+                        <i class="fas fa-minus"></i>
+                      </button>
+                      
+                      <input type="number" 
+                             name="jumlah_pelanggan" 
+                             min="1" 
+                             max="10" 
+                             value="1"
+                             class="input input-bordered text-center w-16"
+                             required
+                             onchange="hitungTotal('{{ $studio->id }}')"
                              id="jumlah_pelanggan_{{ $studio->id }}">
-                      <span class="text-xs text-gray-500 mt-1">*Biaya tambahan Rp5.000 per pelanggan</span>
+                      
+                      <button type="button" 
+                              class="btn btn-circle btn-sm increment-btn"
+                              onclick="adjustCustomerCount('{{ $studio->id }}', 1)">
+                        <i class="fas fa-plus"></i>
+                      </button>
+                    </div>
+                    <span class="text-xs text-gray-500 mt-1">*Biaya tambahan Rp5.000 per pelanggan</span>
                   </div>
+                  
+                  <script>
+                  function adjustCustomerCount(studioId, change) {
+                    const input = document.getElementById(`jumlah_pelanggan_${studioId}`);
+                    let currentValue = parseInt(input.value) || 1;
+                    let newValue = currentValue + change;
+                    
+                    // Validasi min dan max
+                    if (newValue < 1) newValue = 1;
+                    if (newValue > 10) newValue = 10;
+                    
+                    input.value = newValue;
+                    
+                    // Trigger perhitungan total
+                    hitungTotal(studioId);
+                    
+                    // Update tampilan tombol
+                    updateButtonStates(studioId, newValue);
+                  }
+                  
+                  function updateButtonStates(studioId, currentValue) {
+                    const decrementBtn = document.querySelector(`.decrement-btn[onclick*="${studioId}"]`);
+                    const incrementBtn = document.querySelector(`.increment-btn[onclick*="${studioId}"]`);
+                    
+                    // Disable tombol minus jika nilai minimum
+                    decrementBtn.disabled = currentValue <= 1;
+                    
+                    // Disable tombol plus jika nilai maksimum
+                    incrementBtn.disabled = currentValue >= 10;
+                  }
+                  
+                  // Panggil fungsi ini saat halaman dimuat untuk menginisialisasi tombol
+                  document.addEventListener('DOMContentLoaded', function() {
+                    // Jika ada beberapa studio, loop melalui semuanya
+                    @isset($studio)
+                      updateButtonStates('{{ $studio->id }}', 1);
+                    @endisset
+                  });
+                  </script>
 
                   <div class="form-control mb-4">
                       <label class="label">Tanggal Reservasi</label>
@@ -299,8 +357,8 @@ $studios = Studio::all();
                       </div>
                   </div>
 
-                  <div class="p-4 border rounded-lg bg-gray-50 mb-6">
-                      <h4 class="font-medium text-gray-700 mb-2">Rincian Harga:</h4>
+                  <div class="p-4 border rounded-lgS mb-6">
+                      <h4 class="font-medium mb-2">Rincian Harga:</h4>
                       <div class="flex justify-between text-sm mb-1">
                           <span>Harga Studio:</span>
                           <span id="harga_studio_{{ $studio->id }}"></span>
@@ -437,7 +495,7 @@ function printBookingDetails(studioId) {
   <!-- Portfolio Section -->
 <section class="py-20">
   <div class="container mx-auto px-4">
-      <h1 class="text-center text-4xl font-bold mb-16 text-gray-800">Our Works</h1>
+      <h1 class="text-center text-4xl font-bold mb-16">Our Works</h1>
 
       @php
           $portfolioItems = App\Models\Portfolio::orderBy('order', 'asc')->get();
@@ -518,9 +576,9 @@ foreach(range(1, 5) as $star) {
 @endphp
 
 {{-- Card Rating Rata-rata --}}
-<div class="card bg-base-100 shadow-lg">
+<div class="card bg-gray-100 shadow-lg">
 <div class="card-body">
-  <h2 class="card-title text-2xl">Ulasan Pengguna</h2>
+  <h2 class="card-title text-2xl dark:text-gray-800">Ulasan Pengguna</h2>
   <div class="flex flex-col md:flex-row items-center gap-8">
     {{-- Bagian Rating --}}
     <div class="text-center">
@@ -536,7 +594,7 @@ foreach(range(1, 5) as $star) {
     </div>
 
     {{-- Progress Bar --}}
-    <div class="flex-1 w-full space-y-2">
+    <div class="flex-1 w-full space-y-2 bg">
       @foreach(range(5,1) as $star)
         @php
           $count = $ratingsDistribution[$star] ?? 0;
@@ -576,9 +634,9 @@ $editingReviewId = request()->query('edit'); // Ambil ID dari query param ?edit=
 @endphp
 
 @if($allReviews->count())
-<div class="space-y-4">
+<div class="space-y-4 ">
   @foreach($allReviews as $booking)
-  <div class="card bg-base-100 shadow-md p-4" x-data="{ editing: false }">
+  <div class="card shadow-md bg-gray-100 p-4" x-data="{ editing: false }">
       <div class="flex justify-between items-start">
         <div class="flex items-center space-x-3">
           <div class="avatar">
@@ -588,17 +646,17 @@ $editingReviewId = request()->query('edit'); // Ambil ID dari query param ?edit=
             </div>
           </div>
           <div>
-              <h3 class="font-bold">{{ $booking->user->name }}</h3>
-              <p class="text-sm text-gray-500">{{ $booking->studio->nama }}</p>
+              <h3 class="font-bold text-gray-800">{{ $booking->user->name }}</h3>
+              <p class="text-sm text-gray-800">{{ $booking->studio->nama }}</p>
           </div>
       </div>      
           @if(Auth::id() == $booking->user_id)
               <div>
-                  <button class="btn btn-sm btn-outline" @click="editing = !editing">Edit</button>
+                  <button class="btn btn-sm rounded-3xl w-10" @click="editing = !editing">Edit</button>
                   <form action="{{ route('reviews.destroy', $booking->id) }}" method="POST" class="inline">
                       @csrf
                       @method('DELETE')
-                      <button type="submit" class="btn btn-sm btn-error ml-2" onclick="return confirm('Are you sure?')">Delete</button>
+                      <button type="submit" class="btn rounded-3xl btn-sm btn-error ml-2" onclick="return confirm('Are you sure?')">Delete</button>
                   </form>
               </div>
           @endif
@@ -606,7 +664,7 @@ $editingReviewId = request()->query('edit'); // Ambil ID dari query param ?edit=
 
       {{-- Show content or form based on Alpine state --}}
       <div x-show="!editing" class="mt-3">
-          <p class="text-gray-700">{{ $booking->review }}</p>
+          <p class="text-gray-800">{{ $booking->review }}</p>
           <div class="rating rating-sm mt-2">
               @for($i = 1; $i <= 5; $i++)
                   <input type="radio" class="mask mask-star bg-yellow-400" disabled {{ $i == $booking->rating ? 'checked' : '' }} />

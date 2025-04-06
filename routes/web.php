@@ -33,54 +33,36 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
 
-
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 Route::get('/bookings/create', [BookingController::class, 'showBookingForm'])->name('bookings.form');
 Route::post('/bookings/create', [BookingController::class, 'create'])->name('bookings.create');
-// Tambahkan route index
 Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
 
 Route::prefix('dashboard')->middleware(['auth'])->group(function () {
-    Route::get('/studios', [DashboardController::class, 'studios'])
-         ->name('dashboard.studios');
+    Route::get('/studios', [DashboardController::class, 'studios'])->name('dashboard.studios');
 });
 
 Route::middleware(['auth'])->group(function () {
-    Route::get('/dashboard', [DashboardController::class, 'dashboard'])
-         ->name('dashboard.index');
+    Route::get('/dashboard', [DashboardController::class, 'dashboard'])->name('dashboard.index');
 });
 
 Route::prefix('dashboard')->name('dashboard.')->group(function () {
-
-    // Route untuk menampilkan form create studio
     Route::get('/create', [StudioController::class, 'create'])->name('create');
-
     Route::get('/customers', [DashboardController::class, 'customers'])->name('customers');
-
     Route::get('/settings', [DashboardController::class, 'settings'])->name('settings');
-
-    // Route untuk menyimpan studio baru (dari form create)
     Route::post('/store', [StudioController::class, 'store'])->name('store');
-
- Route::get('/{studio}/edit', [StudioController::class, 'edit'])->name('edit');
-    
-    // Route to handle the update request (make sure it's PUT)
+    Route::get('/{studio}/edit', [StudioController::class, 'edit'])->name('edit');
     Route::put('/{studio}', [StudioController::class, 'update'])->name('update');
-
-    Route::delete('/{studio}', [StudioController::class, 'destroy'])->name('destroy'); 
+    Route::delete('/{studio}', [StudioController::class, 'destroy'])->name('destroy');
 });
 
 Route::put('/bookings/{booking}/status', [BookingController::class, 'updateStatus']);
 
 // Route::prefix('dashboard/customers')->name('dashboard.customers.')->group(function () {
-    Route::get('/customers/{user}/edit', [CustomerController::class, 'edit'])->name('dashboard.customers.edit');
-
-    // Rute untuk mengupdate user
-    Route::put('/customers/{user}', [CustomerController::class, 'update'])->name('customer.update');
-
-    // Rute untuk menghapus user
-    Route::delete('/customers/{user}', [CustomerController::class, 'destroy'])->name('dashboard.customers.destroy');
+Route::get('/customers/{user}/edit', [CustomerController::class, 'edit'])->name('dashboard.customers.edit');
+Route::put('/customers/{user}', [CustomerController::class, 'update'])->name('customer.update');
+Route::delete('/customers/{user}', [CustomerController::class, 'destroy'])->name('dashboard.customers.destroy');
 // });
 
 Route::middleware(['auth'])->group(function () {
@@ -89,17 +71,15 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::middleware(['auth'])->group(function () {
-    // Settings Routes
     Route::prefix('settings')->group(function () {
         // GET Routes (Menampilkan Halaman)
         // Route::get('/', [SettingsController::class, 'index'])->name('settings');
         Route::get('/security', [SettingsController::class, 'security'])->name('settings.security');
         Route::get('/preferences', [SettingsController::class, 'preferences'])->name('settings.preferences');
         Route::get('/notifications', [SettingsController::class, 'notifications'])->name('settings.notifications');
-        
+
         // Route untuk memproses update password (POST)
-        Route::post('/security/update', [SettingsController::class, 'updatePassword'])
-             ->name('settings.security.update');
+        Route::post('/security/update', [SettingsController::class, 'updatePassword'])->name('settings.security.update');
     });
 });
 
@@ -114,25 +94,22 @@ Route::post('/set-theme', function (\Illuminate\Http\Request $request) {
 Route::middleware(['auth'])->group(function () {
     Route::get('/purchase-history', [BookingController::class, 'purchaseHistory'])->name('purchase.history');
     Route::get('/purchase/{id}', [BookingController::class, 'purchaseDetail'])->name('purchase.detail');
+
     // routes/web.php
-// routes/web.php
-Route::post('/bookings/{id}/request-cancel', [BookingController::class, 'requestCancel'])
-    ->middleware('auth')->name('bookings.request-cancel');
+    // routes/web.php
+    Route::post('/bookings/{id}/request-cancel', [BookingController::class, 'requestCancel'])->middleware('auth')->name('bookings.request-cancel');
 });
 
-Route::post('/bookings/{booking}/submit-review', [BookingController::class, 'submitReview'])
-         ->name('bookings.submit-review');
+Route::post('/bookings/{booking}/submit-review', [BookingController::class, 'submitReview'])->name('bookings.submit-review');
+Route::put('/bookings/{booking}', [BookingController::class, 'updateBooking'])->name('bookings.update');
 
 // routes/web.php
-Route::get('/bookings/{booking}', [BookingController::class, 'show'])
-     ->name('show')
-     ->middleware('auth');
+Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('show')->middleware('auth');
 
-     Route::put('/reviews/{booking}', [BookingController::class, 'update'])->name('reviews.update')->middleware('auth');
-     Route::delete('/reviews/{booking}', [BookingController::class, 'destroy'])->name('reviews.destroy')->middleware('auth');
+Route::put('/reviews/{booking}', [BookingController::class, 'update'])->name('reviews.update')->middleware('auth');
+Route::delete('/reviews/{booking}', [BookingController::class, 'destroy'])->name('reviews.destroy')->middleware('auth');
 
-
-     Route::get('/dashboard/portfolio', [DashboardController::class, 'settings'])->name('dashboard.settings');
+Route::get('/dashboard/portfolio', [DashboardController::class, 'settings'])->name('dashboard.settings');
 
 // Portfolio management routes
 Route::post('/dashboard/portfolio/save', [DashboardController::class, 'save'])->name('dashboard.portfolio.save');

@@ -48,11 +48,11 @@
     <div class="hidden lg:flex flex-grow justify-center">
       <nav>
         <ul class="flex space-x-6">
-          <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Home</a></li>
-          <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Studios</a></li>
-          <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Services</a></li>
-          <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Portofolio</a></li>
-          <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Contact</a></li>
+          <li><a href="#" class=" hover:text-gray-500">Home</a></li>
+          <li><a href="#" class=" hover:text-gray-500">Studios</a></li>
+          <li><a href="#" class=" hover:text-gray-500">Services</a></li>
+          <li><a href="#" class=" hover:text-gray-500">Portofolio</a></li>
+          <li><a href="#" class=" hover:text-gray-500">Contact</a></li>
         </ul>
       </nav>
     </div>
@@ -116,11 +116,11 @@
   {{-- Mobile Menu Dropdown (akan muncul ketika mobile-menu-button diklik) --}}
   <div id="mobile-menu" class="lg:hidden hidden p-4 bg-base-100 shadow-md">
     <ul class="space-y-2 ">
-      <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Home</a></li>
-      <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Studios</a></li>
-      <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Services</a></li>
-      <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Portofolio</a></li>
-      <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Contact</a></li>
+      <li><a href="#" class="block py-2 hover:text-gray-500">Home</a></li>
+      <li><a href="#" class="block py-2 hover:text-gray-500">Studios</a></li>
+      <li><a href="#" class="block py-2 hover:text-gray-500">Services</a></li>
+      <li><a href="#" class="block py-2 hover:text-gray-500">Portofolio</a></li>
+      <li><a href="#" class="block py-2 hover:text-gray-500">Contact</a></li>
       
       <div class="pt-4">
         <input type="text" placeholder="Search" class="input input-bordered w-full focus:outline-none focus:ring-0 focus:border-opacity-50 rounded-3xl mb-3"/>
@@ -164,7 +164,7 @@
 
     <div id="toast-container" class="toast toast-top toast-end"></div>
     <div class="container mx-auto p-4 max-w-7xl">
-        <h1 class="text-2xl font-bold mb-6 text-gray-800">Riwayat Reservasi Studio Anda</h1>
+        <h1 class="text-2xl font-bold mb-6">Riwayat Reservasi Studio Anda</h1>
         
         @if($bookings->isEmpty())
             <div class="alert alert-info shadow-lg">
@@ -176,43 +176,42 @@
                 </div>
             </div>
         @else
-            <div class="bg-white rounded-lg shadow overflow-hidden">
+            <div class="bg-gray-200 rounded-lg shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="table w-full">
-                        <thead class="bg-gray-100">
+                        <thead class="">
                             <tr>
-                                <th class="text-left px-4 py-3">ID Booking</th>
-                                <th class="text-left px-4 py-3">Studio</th>
-                                <th class="text-left px-4 py-3">Tanggal</th>
-                                <th class="text-left px-4 py-3">Waktu</th>
-                                <th class="text-left px-4 py-3">Durasi</th>
-                                <th class="text-left px-4 py-3">Jumlah Orang</th>
-                                <th class="text-left px-4 py-3">Total Harga</th>
-                                <th class="text-left px-4 py-3">Status</th>
-                                <th class="text-left px-4 py-3">Aksi</th>
+                                <th class="text-left px-4 py-3 text-gray-800">ID Booking</th>
+                                <th class="text-left px-4 py-3 text-gray-800">Studio</th>
+                                <th class="text-left px-4 py-3 text-gray-800">Tanggal</th>
+                                <th class="text-left px-4 py-3 text-gray-800">Waktu</th>
+                                <th class="text-left px-4 py-3 text-gray-800">Durasi</th>
+                                <th class="text-left px-4 py-3 text-gray-800">Jumlah Orang</th>
+                                <th class="text-left px-4 py-3 text-gray-800">Total Harga</th>
+                                <th class="text-left px-4 py-3 text-gray-800">Status</th>
+                                <th class="text-left px-4 py-3 text-gray-800">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach($bookings as $booking)
-                            <tr class="hover:bg-gray-50 border-b border-gray-100">
-                                <td class="px-4 py-3">#{{ $booking->id }}</td>
+                            <tr class="hover:bg-gray-300 border-b border-gray-100">
+                                <td class="px-4 py-3 text-gray-800">#{{ $booking->booking_id }}</td>
                                 <td class="px-4 py-3">
                                     @if($booking->studio)
-                                        <div class="font-medium">{{ $booking->studio->nama }}</div>
-                                        <div class="text-sm text-gray-500">{{ $booking->studio->lokasi }}</div>
+                                        <div class="font-medium text-gray-800">{{ $booking->studio->nama }}</div>
                                     @else
                                         <span class="text-gray-400">Studio tidak tersedia</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap text-gray-800">
                                     {{ $booking->tanggal_reservasi->format('d M Y') }}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap">
+                                <td class="px-4 py-3 whitespace-nowrap text-gray-800">
                                     {{ $booking->waktu_reservasi->format('H:i') }}
                                 </td>
-                                <td class="px-4 py-3">{{ $booking->durasi_jam }} jam</td>
-                                <td class="px-4 py-3">{{ $booking->jumlah_pelanggan }} orang</td>
-                                <td class="px-4 py-3 whitespace-nowrap">Rp {{ number_format($booking->total_harga, 0, ',', '.') }}</td>
+                                <td class="px-4 py-3 text-gray-800">{{ $booking->durasi_jam }} jam</td>
+                                <td class="px-4 py-3 text-gray-800">{{ $booking->jumlah_pelanggan }} orang</td>
+                                <td class="px-4 py-3 whitespace-nowrap text-gray-800">Rp {{ number_format($booking->total_harga, 0, ',', '.') }}</td>
                                 <td class="px-4 py-3">
                                     @php
                                         $statusClass = [

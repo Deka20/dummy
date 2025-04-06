@@ -85,6 +85,8 @@
           <label class="label">
             <a href="/forgot-password" class="label-text-alt link link-hover text-primary">Forgot password?</a>
           </label>
+          <label class="label">
+            <a href="{{ route('register') }}" class="label-text-alt link link-hover text-primary">Don't have an account?</a>
         </div>
         
         <!-- Remember Me & Login Button -->

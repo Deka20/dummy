@@ -309,10 +309,13 @@
         <i class="fas fa-times"></i>
         Batalkan Reservasi
     </button>
-                <a href="{{ route('show', $booking->id) }}" class="btn btn-primary gap-2">
-                    <i class="fas fa-edit"></i>
-                    Ubah Reservasi
-                </a>
+    <a href="javascript:void(0);" 
+    class="btn btn-primary gap-2 edit-booking-btn" 
+    data-booking='@json($booking)'>
+     <i class="fas fa-edit"></i>
+     Ubah Reservasi
+ </a>
+ 
                 @elseif($booking->status == 'confirmed')
                 <button class="btn btn-warning gap-2">
                     <i class="fas fa-question-circle"></i>
@@ -328,6 +331,76 @@
   </div>
 </div>
 
+<!-- Edit Booking Modal -->
+<dialog id="editModal" class="modal">
+  <div class="modal-box">
+    <form method="dialog">
+      <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+    </form>
+    <h3 class="text-lg font-bold">Edit Reservasi</h3>
+    <div class="py-4 space-y-4">
+      <form id="editBookingForm" method="POST" action="">
+        @csrf
+        @method('PUT')
+        
+        <input type="hidden" name="booking_id" id="editBookingId">
+        
+        <div class="form-control mb-4">
+          <label class="label">Tanggal Reservasi</label>
+          <input type="date" id="editDate" name="date" 
+                 class="input input-bordered w-full" 
+                 min="{{ date('Y-m-d') }}" required>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-medium mb-2">Waktu Reservasi</label>
+          <div class="grid grid-cols-3 gap-2" id="timeSlotsContainer">
+            @for($hour = 9; $hour <= 21; $hour++)
+              <label class="flex items-center space-x-2 border rounded-lg p-3 cursor-pointer">
+                <input type="radio" name="time" 
+                       value="{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00"
+                       class="radio radio-primary time-radio">
+                <span>{{ str_pad($hour, 2, '0', STR_PAD_LEFT) }}:00</span>
+              </label>
+            @endfor
+          </div>
+        </div>
+
+        <div class="p-4 border rounded-lg bg-gray-50 mb-6">
+          <h4 class="font-medium text-gray-700 mb-2">Detail Reservasi:</h4>
+          <div class="flex justify-between text-sm mb-1">
+            <span>Studio:</span>
+            <span id="studioNameDisplay"></span>
+          </div>
+          <div class="flex justify-between text-sm mb-1">
+            <span>Jumlah Pelanggan:</span>
+            <span id="customerCountDisplay"></span>
+          </div>
+          <div class="flex justify-between text-sm mb-1">
+            <span>Durasi:</span>
+            <span id="durationDisplay"></span>
+          </div>
+          <div class="border-t pt-2 mt-2 flex justify-between font-medium">
+            <span>Total Harga:</span>
+            <span id="totalPriceDisplay"></span>
+          </div>
+        </div>
+
+        <div class="modal-action mt-6">
+          <button type="button" class="btn" onclick="document.getElementById('editModal').close()">
+            Batal
+          </button>
+          <button type="submit" class="btn btn-success gap-2">
+            <i class="fas fa-save"></i> Simpan Perubahan
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+
+
 <!-- Cancel Booking Modal -->
 <dialog id="cancelModal" class="modal">
   <div class="modal-box">
@@ -341,6 +414,8 @@
       </div>
   </div>
 </dialog>
+
+
 
 <script>
   let currentBookingId = null;
@@ -481,6 +556,118 @@
     // Example usage in console:
     // console.log(generateBookingId('Studio Lens', '2023-06-15', 42));
     // Output: "STU-20230615-0042"
+
+    const editModal = document.getElementById('editModal');
+const editForm = document.getElementById('editBookingForm');
+const editBookingIdInput = document.getElementById('editBookingId');
+const editDateInput = document.getElementById('editDate');
+const editTimeInput = document.getElementById('editTime');
+
+document.querySelectorAll('.edit-booking-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const booking = JSON.parse(button.dataset.booking);
+      const modal = document.getElementById('editModal');
+      
+      // Isi form dengan data booking
+      document.getElementById('editBookingId').value = booking.id;
+      document.getElementById('editDate').value = booking.tanggal_reservasi;
+      
+      // Set waktu yang dipilih
+      const timeRadios = document.querySelectorAll('.time-radio');
+      timeRadios.forEach(radio => {
+        radio.checked = (radio.value === booking.waktu_reservasi);
+      });
+      
+      // Tampilkan detail reservasi
+      document.getElementById('studioNameDisplay').textContent = booking.studio.nama;
+      document.getElementById('customerCountDisplay').textContent = booking.jumlah_pelanggan + ' orang';
+      document.getElementById('durationDisplay').textContent = booking.durasi_jam + ' jam';
+      document.getElementById('totalPriceDisplay').textContent = 'Rp' + booking.total_harga.toLocaleString('id-ID');
+      
+      // Set action form
+      document.getElementById('editBookingForm').action = `/bookings/${booking.id}`;
+      
+      // Tampilkan modal
+      modal.showModal();
+    });
+  });
+
+  // Handle form submission
+  document.getElementById('editBookingForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const form = e.target;
+    const formData = new FormData(form);
+    const submitButton = form.querySelector('button[type="submit"]');
+    
+    try {
+      // Tampilkan loading state
+      submitButton.disabled = true;
+      submitButton.innerHTML = '<span class="loading loading-spinner"></span> Menyimpan...';
+
+      const response = await fetch(form.action, {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+          'X-Requested-With': 'XMLHttpRequest',
+          'Accept': 'application/json'
+        }
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Gagal memperbarui reservasi');
+      }
+
+      if (data.success) {
+        // Tutup modal dan tampilkan notifikasi
+        document.getElementById('editModal').close();
+        showToast('success', 'Reservasi berhasil diperbarui');
+        
+        // Perbarui tampilan dengan data baru
+        updateBookingDisplay(data.booking);
+      } else {
+        showToast('error', data.message);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      showToast('error', error.message);
+    } finally {
+      submitButton.disabled = false;
+      submitButton.innerHTML = '<i class="fas fa-save"></i> Simpan Perubahan';
+    }
+  });
+
+  function updateBookingDisplay(booking) {
+    // Implementasi untuk memperbarui tampilan booking
+    // Contoh:
+    const bookingCard = document.querySelector(`.booking-card[data-booking-id="${booking.id}"]`);
+    if (bookingCard) {
+      const dateElement = bookingCard.querySelector('.booking-date');
+      const timeElement = bookingCard.querySelector('.booking-time');
+      
+      if (dateElement) dateElement.textContent = booking.tanggal_reservasi;
+      if (timeElement) timeElement.textContent = booking.waktu_reservasi;
+    }
+  }
+
+  function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} fixed top-4 right-4 z-50 max-w-xs`;
+    toast.innerHTML = `
+      <div class="flex items-center">
+        <span>${message}</span>
+      </div>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.remove();
+    }, 3000);
+  }
+
 </script>
 
 
