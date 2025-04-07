@@ -135,6 +135,26 @@ if(!isset($recentBookings)) {
           </div>
         </div>
 
+        @php
+// Mengambil semua rating dari semua booking
+$allRatings = App\Models\Booking::whereNotNull('rating')
+  ->pluck('rating');
+
+// Menghitung total ulasan
+$totalReviews = $allRatings->count();
+
+// Menghitung rata-rata rating
+$averageRating = $totalReviews > 0 ? $allRatings->avg() : 0;
+
+// Menghitung distribusi rating
+$ratingsDistribution = [];
+foreach(range(1, 5) as $star) {
+  $ratingsDistribution[$star] = $allRatings->filter(function($rating) use ($star) {
+    return $rating == $star;
+  })->count();
+}
+@endphp
+
         <!-- Rating Card -->
         <div class="card bg-white shadow-sm">
           <div class="card-body p-4">
@@ -146,7 +166,7 @@ if(!isset($recentBookings)) {
               </div>
               <div>
                 <p class="text-sm text-gray-500">Average Rating</p>
-                <h2 class="text-2xl font-bold">4.8</h2>
+                <h2 class="text-2xl font-bold">{{ number_format($averageRating, 1) }}</h2>
               </div>
             </div>
           </div>
