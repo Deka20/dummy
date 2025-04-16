@@ -34,11 +34,24 @@ if(!isset($recentBookings)) {
     </div>
     
     <nav class="flex-1 mt-4">
-      <a href="" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-700">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
-        </svg>
-        Dashboard
+      <a href="{{ route('dashboard.index') }}" class="flex items-center justify-between px-4 py-3 text-slate-300 hover:bg-slate-700 group">
+        <div class="flex items-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+          </svg>
+          Dashboard
+        </div>
+        <div class="relative">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          
+          @if($newOrdersCount > 0)
+            <span class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-semibold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+              {{ $newOrdersCount > 9 ? '9+' : $newOrdersCount }}
+            </span>
+          @endif
+        </div>
       </a>
       <a href="{{ route('dashboard.studios') }}" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-700">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -53,11 +66,23 @@ if(!isset($recentBookings)) {
         Customers
       </a>
       <a href="{{route('dashboard.settings')}}" class="flex items-center px-4 py-3 text-slate-300 hover:bg-slate-700">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-        Customers
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+        Settings
       </a>
+      <a href="{{ route('dashboard.payments') }}" class="flex items-center justify-between px-4 py-3  text-slate-300 hover:bg-slate-700">
+        <div class="flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>Bukti Pembayaran</span>
+        </div>
+        
+        @if($unverifiedPaymentsCount > 0)
+        <span class="bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full animate-pulse">
+            {{ $unverifiedPaymentsCount > 9 ? '9+' : $unverifiedPaymentsCount }}
+        </span>
+        @endif
+    </a>
     </nav>
   </div>
 
@@ -189,6 +214,7 @@ foreach(range(1, 5) as $star) {
                   <th class="bg-white text-gray-500 font-medium text-left">Guests</th>
                   <th class="bg-white text-gray-500 font-medium text-left">Total Price</th>
                   <th class="bg-white text-gray-500 font-medium text-left">Status</th>
+                  <th class="bg-white text-gray-500 font-medium text-left">Payment Proof</th>
                   <th class="bg-white text-gray-500 font-medium text-left pr-6">Actions</th>
               </tr>
           </thead>
@@ -223,6 +249,15 @@ foreach(range(1, 5) as $star) {
                           {{ ucfirst($booking->status) }}
                       </span>
                   </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    @if($booking->payment_proof)
+                        <button onclick="openPaymentProofModal('{{ asset('storage/' . $booking->payment_proof) }}')" class="text-indigo-600 hover:text-indigo-900">
+                            Lihat Bukti
+                        </button>
+                    @else
+                        <span class="text-gray-400">-</span>
+                    @endif
+                </td>
                   <td class="pr-6">
                     <div x-data="{
                         open: false,
@@ -335,6 +370,44 @@ foreach(range(1, 5) as $star) {
     </div>
   </div>
 </div>
+
+<!-- Modal untuk menampilkan bukti pembayaran -->
+<div id="paymentProofModal" class="fixed inset-0 z-50 hidden overflow-y-auto">
+  <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+      <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+    </div>
+    <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+    <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+      <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="sm:flex sm:items-start">
+          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Bukti Pembayaran</h3>
+            <div class="mt-2">
+              <img id="modalPaymentProofImage" src="" alt="Bukti Pembayaran" class="w-full">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <button type="button" onclick="closePaymentProofModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function openPaymentProofModal(imageUrl) {
+    document.getElementById('modalPaymentProofImage').src = imageUrl;
+    document.getElementById('paymentProofModal').classList.remove('hidden');
+  }
+
+  function closePaymentProofModal() {
+    document.getElementById('paymentProofModal').classList.add('hidden');
+  }
+</script>
 
 @push('scripts')
 <script>

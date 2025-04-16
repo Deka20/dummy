@@ -115,3 +115,16 @@ Route::get('/dashboard/portfolio', [DashboardController::class, 'settings'])->na
 Route::post('/dashboard/portfolio/save', [DashboardController::class, 'save'])->name('dashboard.portfolio.save');
 Route::delete('/dashboard/portfolio/delete/{id}', [DashboardController::class, 'delete'])->name('dashboard.portfolio.delete');
 Route::post('/dashboard/portfolio/update-order', [DashboardController::class, 'updateOrder'])->name('dashboard.portfolio.update-order');
+
+Route::post('/bookings/{booking}/upload-payment', [BookingController::class, 'uploadPayment'])
+    ->name('bookings.upload-payment');
+
+
+Route::get('/dashboard/payments', [DashboardController::class, 'payments'])
+    ->name('dashboard.payments');
+
+Route::post('/dashboard/payments/{booking}/verify', [DashboardController::class, 'verifyPayment'])
+    ->name('dashboard.payments.verify');
+
+Route::post('/dashboard/payments/{booking}/reject', [DashboardController::class, 'rejectPayment'])
+    ->name('dashboard.payments.reject');

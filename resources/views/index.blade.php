@@ -8,10 +8,112 @@
   <title>Studio Lens</title>
   <link href="https://cdn.jsdelivr.net/npm/daisyui@5/themes.css" rel="stylesheet" type="text/css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Animation Classes */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+      to {
+        opacity: 1;
+      }
+    }
+    
+    @keyframes slideInLeft {
+      from {
+        opacity: 0;
+        transform: translateX(-50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(50px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+    
+    /* Animation Classes */
+    .animate-fadeInUp {
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+    
+    .animate-fadeIn {
+      animation: fadeIn 1s ease-out forwards;
+    }
+    
+    .animate-slideInLeft {
+      animation: slideInLeft 0.8s ease-out forwards;
+    }
+    
+    .animate-slideInRight {
+      animation: slideInRight 0.8s ease-out forwards;
+    }
+    
+    .animate-delay-100 {
+      animation-delay: 0.1s;
+    }
+    
+    .animate-delay-200 {
+      animation-delay: 0.2s;
+    }
+    
+    .animate-delay-300 {
+      animation-delay: 0.3s;
+    }
+    
+    /* Initial state before animation */
+    [data-animate] {
+      opacity: 0;
+    }
+    
+    /* Polaroid hover effect */
+    .polaroid-hover {
+      transition: transform 0.3s ease;
+    }
+    
+    .polaroid-hover:hover {
+      transform: scale(1.05) rotate(0deg) !important;
+    }
+
+    html {
+  scroll-behavior: smooth;
+}
+
+/* Untuk browser yang tidak mendukung smooth scroll */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+section {
+  scroll-margin-top: 80px; /* Sesuaikan dengan tinggi navbar Anda */
+}
+  </style>
 </head>
 <body>
  {{-- Navbar Section --}}
-<div class="navbar bg-base-100 shadow-sm flex items-center justify-between p-4">
+<div id="main-navbar" class="navbar bg-base-100/80 shadow-sm flex items-center justify-between p-4 sticky top-0 z-50 backdrop-blur-sm transition-all duration-300">
   <div class="flex-none flex items-center gap-2">
     <img src="https://i.pinimg.com/736x/e0/4c/92/e04c9263fa971bf01fd1ed73f0574b3e.jpg" alt="Studio Lens Logo" class="w-8 h-8 rounded-full object-cover">
     <a class="text-xl font-medium leading-none">Studio Lens</a>
@@ -30,11 +132,18 @@
   <div class="hidden lg:flex flex-grow justify-center">
     <nav>
       <ul class="flex space-x-6">
-        <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Home</a></li>
-        <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Studios</a></li>
-        <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Services</a></li>
-        <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Portofolio</a></li>
-        <li><a href="#" class="text-gray-800 dark:text-gray-100 hover:text-gray-500">Contact</a></li>
+        <li>
+          <a href="{{ url('/') }}" class="nav-link {{ request()->is('/') ? 'font-medium' : 'hover:text-gray-500' }}">Home</a>
+        </li>
+        <li>
+          <a href="{{ url('/') }}#studios" class="nav-link {{ request()->is('/') ? 'font-medium' : 'hover:text-gray-500' }}">Studios</a>
+        </li>
+        <li>
+          <a href="{{ url('/') }}#portofolio" class="{{ request()->is('/') ? 'font-medium' : 'hover:text-gray-500' }}">Portfolio</a>
+        </li>
+        <li>
+          <a href="{{ url('/') }}#contact" class="{{ request()->is('/') ? 'font-medium' : 'hover:text-gray-500' }}">Contact</a>
+        </li>
       </ul>
     </nav>
   </div>
@@ -47,6 +156,9 @@
       <option value="dark">Dark</option>
       <option value="cupcake">Cupcake</option>
       <option value="forest">Forest</option>
+      <option value="cyberpunk">Cyberpunk</option>
+      <option value="luxury">Luxury</option>
+      <option value="caramellatte">Luxury</option>
     </select>
 
     @auth
@@ -69,12 +181,21 @@
         </label>
         <ul tabindex="0" class="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
           <li>
-            <a href="{{ route('profile.edit') }}" class="justify-between">
+            <a href="{{ route('profile.edit') }}" class="justify-between {{ request()->is('profile*') ? 'active' : '' }}">
               Profile
             </a>
           </li>
-          <li><a href="{{ route('settings.security') }}">Settings</a></li>
-          <li><a href="{{ route('purchase.history') }}">Purchase  History</a></li>
+          <li><a href="{{ route('settings.security') }}" class="{{ request()->is('settings*') ? 'active' : '' }}">Settings</a></li>
+          <li>
+            <a href="{{ route('purchase.history') }}" class="{{ request()->is('purchase*') ? 'active' : '' }} flex items-center justify-between">
+                <span>Purchase History</span>
+                @if($confirmedOrdersCount > 0)
+                <span class="bg-red-500 text-white text-xs font-semibold px-2 rounded-full">
+                  {{ $confirmedOrdersCount > 9 ? '9+' : $confirmedOrdersCount }}
+              </span>
+                @endif
+            </a>
+        </li>
           <li>
             <a href="{{ route('logout') }}" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
               Logout
@@ -97,17 +218,16 @@
 
 {{-- Mobile Menu Dropdown (akan muncul ketika mobile-menu-button diklik) --}}
 <div id="mobile-menu" class="lg:hidden hidden p-4 bg-base-100 shadow-md">
-  <ul class="space-y-2 ">
-    <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Home</a></li>
-    <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Studios</a></li>
-    <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Services</a></li>
-    <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Portofolio</a></li>
-    <li><a href="#" class="block py-2 text-gray-800 dark:text-gray-800 hover:text-gray-500">Contact</a></li>
+  <ul class="space-y-2">
+    <li><a href="{{ url('/') }}" class="block py-2 {{ request()->is('/') ? 'text-primary font-medium' : 'hover:text-gray-500' }}">Home</a></li>
+    <li><a href="{{ url('/studios') }}" class="block py-2 {{ request()->is('studios*') ? 'text-primary font-medium' : 'hover:text-gray-500' }}">Studios</a></li>
+    <li><a href="{{ url('/portfolio') }}" class="block py-2 {{ request()->is('portfolio*') ? 'text-primary font-medium' : 'hover:text-gray-500' }}">Portfolio</a></li>
+    <li><a href="{{ url('/contact') }}" class="block py-2 {{ request()->is('contact*') ? 'text-primary font-medium' : 'hover:text-gray-500' }}">Contact</a></li>
     
     <div class="pt-4">
       <input type="text" placeholder="Search" class="input input-bordered w-full focus:outline-none focus:ring-0 focus:border-opacity-50 rounded-3xl mb-3"/>
 
-      <select id="themeSwitcher" class="select select-sm rounded-2xl">
+      <select id="themeSwitcherMobile" class="select select-sm rounded-2xl">
         <option value="light">Light</option>
         <option value="dark">Dark</option>
         <option value="cupcake">Cupcake</option>
@@ -124,9 +244,9 @@
           </div>
           <span class="font-medium">{{ Auth::user()->name }}</span>
         </div>
-        <a href="{{ route('profile.edit') }}" class="block py-2 text-gray-800 hover:text-gray-500">Profile</a>
-        <a href="" class="block py-2 text-gray-800 hover:text-gray-500">Settings</a>
-        <a href="" class="block py-2 text-gray-800 hover:text-gray-500">Settings</a>
+        <a href="{{ route('profile.edit') }}" class="block py-2 {{ request()->is('profile*') ? 'text-primary font-medium' : 'hover:text-gray-500' }}">Profile</a>
+        <a href="{{ route('settings.security') }}" class="block py-2 {{ request()->is('settings*') ? 'text-primary font-medium' : 'hover:text-gray-500' }}">Settings</a>
+        <a href="{{ route('purchase.history') }}" class="block py-2 {{ request()->is('purchase*') ? 'text-primary font-medium' : 'hover:text-gray-500' }}">Purchase History</a>
         <form method="POST" action="{{ route('logout') }}" class="pt-2">
           @csrf
           <button type="submit" class="btn btn-outline w-full rounded-2xl">Logout</button>
@@ -149,15 +269,16 @@
     <div class="hero-content flex-col lg:flex-row-reverse px-4 py-6 lg:px-16 lg:py-16">
       <img
       src="https://i.pinimg.com/736x/f5/ae/7d/f5ae7df196a797c96104311778212593.jpg"
-      class="max-w-full lg:max-w-lg rounded-2xl shadow-[0px_0px_20px_10px_rgba(0,0,0,0.2)] mb-6 lg:mb-0 transform transition-transform duration-300 hover:scale-105"/>  
+      class="max-w-full lg:max-w-lg rounded-2xl shadow-[0px_0px_20px_10px_rgba(0,0,0,0.2)] mb-6 lg:mb-0 transform transition-transform duration-300 hover:scale-105"
+      data-animate="slideInRight" />  
       <div class="text-center lg:text-left">
-        <h1 class="text-3xl lg:text-5xl font-bold leading-tight">Professional Studio Space for Your Perfect Shot</h1>
-        <p class="py-6 text-base lg:text-xl">
+        <h1 class="text-3xl lg:text-5xl font-bold leading-tight" data-animate="fadeInUp">Professional Studio Space for Your Perfect Shot</h1>
+        <p class="py-6 text-base lg:text-xl" data-animate="fadeInUp" data-animate-delay="100">
           Book premium photo studio space equipped with professional lighting and gear. Perfect for photographers, content creators, and artists.
         </p>
         <div class="flex flex-col sm:flex-row justify-center lg:justify-start gap-4">
-          <button class="btn btn-primary rounded-2xl">Reserve Studio</button>
-          <button class="btn rounded-2xl">Take a Tour</button>
+          <button class="btn btn-primary rounded-2xl" data-animate="fadeInUp" data-animate-delay="200">Reserve Studio</button>
+          <button class="btn rounded-2xl" data-animate="fadeInUp" data-animate-delay="300">Take a Tour</button>
         </div>
       </div>
     </div>
@@ -165,12 +286,12 @@
   {{-- Hero Section End --}}
 
   {{-- About Section --}}
-  <h1 class="text-center text-3xl font-bold mt-10">Why Choose Our Studios</h1>
+  <h1 class="text-center text-3xl font-bold mt-10" data-animate="fadeIn">Why Choose Our Studios</h1>
   <div class="min-h-full flex flex-col items-center justify-center p-4 bg-base-100">
     <!-- Container untuk card horizontal -->
     <div class="flex flex-col md:flex-row gap-6 items-center justify-center">
       <!-- Card 1 -->
-      <div class="card bg-base-100 w-96 md:w-80 shadow-sm">
+      <div class="card bg-base-100 w-96 md:w-80 shadow-sm" data-animate="fadeInUp">
         <div class="card-body">
           <i class="fa-solid fa-camera text-primary text-2xl"></i>
           <h2 class="card-title">Professional Equipment</h2>
@@ -179,7 +300,7 @@
       </div>
       
       <!-- Card 2 -->
-      <div class="card bg-base-100 w-96 md:w-80 shadow-sm">
+      <div class="card bg-base-100 w-96 md:w-80 shadow-sm" data-animate="fadeInUp" data-animate-delay="100">
         <div class="card-body">
           <i class="fa-solid fa-clock text-primary text-2xl"></i>
           <h2 class="card-title">Flexible Booking</h2>
@@ -188,7 +309,7 @@
       </div>
       
       <!-- Card 3 -->
-      <div class="card bg-base-100 w-96 md:w-80 shadow-sm">
+      <div class="card bg-base-100 w-96 md:w-80 shadow-sm" data-animate="fadeInUp" data-animate-delay="200">
         <div class="card-body">
           <i class="fa-solid fa-star text-2xl text-primary"></i>
           <h2 class="card-title">Premium Spaces</h2>
@@ -200,7 +321,7 @@
   {{-- About Section End --}}
 
   {{-- Studio Section --}}
-  <h1 class="text-center text-3xl font-bold mt-20">Our Studio Spaces</h1>
+  <h1 class="text-center text-3xl font-bold mt-20" data-animate="fadeIn">Our Studio Spaces</h1>
   <div class="flex flex-wrap justify-center gap-6 p-4">
     
     
@@ -210,7 +331,7 @@ $studios = Studio::all();
 @endphp
 
 @foreach($studios as $studio)
-<div class="relative">
+<div class="relative" data-animate="fadeInUp" id="studios">
   <!-- Kartu Studio -->
   <div class="card bg-base-100 shadow-xl w-96 md:w-80 rounded-2xl overflow-hidden cursor-pointer transform transition-transform duration-300 hover:scale-105"
        onclick="document.getElementById('studio_modal_{{ $studio->id }}').showModal()">
@@ -493,7 +614,7 @@ function printBookingDetails(studioId) {
   {{-- Studio Section End --}}
 
   <!-- Portfolio Section -->
-<section class="py-20">
+<section class="py-20" data-animate="fadeIn" id="portofolio">
   <div class="container mx-auto px-4">
       <h1 class="text-center text-4xl font-bold mb-16">Our Works</h1>
 
@@ -515,7 +636,9 @@ function printBookingDetails(studioId) {
                       };
                   @endphp
                   
-                  <div class="w-80 h-105 bg-white p-4 pb-16 shadow-lg transform {{ $rotation }} hover:rotate-0 transition-all duration-300">
+                  <div class="w-80 h-105 bg-white p-4 pb-16 shadow-lg transform {{ $rotation }} hover:rotate-0 transition-all duration-300 polaroid-hover"
+                         data-animate="fadeInUp"
+                         data-animate-delay="{{ ($index % 3) * 100 }}ms">
                       <!-- Simplified image section -->
                       <img src="{{ $item->image_url }}" 
                            class="w-full h-[115%] object-cover"
@@ -550,7 +673,7 @@ function printBookingDetails(studioId) {
 @endpush
 
 {{-- Rating Section --}}
-<h1 class="text-center text-3xl font-bold mt-20">Ratings & Reviews</h1>
+<h1 class="text-center text-3xl font-bold mt-20" data-animate="fadeIn">Ratings & Reviews</h1>
 
 <div class="max-w-4xl mx-auto p-4 space-y-6">
 
@@ -576,7 +699,7 @@ foreach(range(1, 5) as $star) {
 @endphp
 
 {{-- Card Rating Rata-rata --}}
-<div class="card bg-gray-100 shadow-lg">
+<div class="card bg-gray-100 shadow-lg" data-animate="fadeInUp">
 <div class="card-body">
   <h2 class="card-title text-2xl dark:text-gray-800">Ulasan Pengguna</h2>
   <div class="flex flex-col md:flex-row items-center gap-8">
@@ -602,7 +725,7 @@ foreach(range(1, 5) as $star) {
         @endphp
         <div class="flex items-center gap-2">
           <!-- Star + Number -->
-          <span class="w-16 text-sm flex items-center gap-1 flex-shrink-0">
+          <span class="w-16 text-sm text-gray-800 flex items-center gap-1 flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
               <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.286 3.955a1 1 0 00.95.69h4.162c.969 0 1.371 1.24.588 1.81l-3.37 2.448a1 1 0 00-.364 1.118l1.286 3.955c.3.921-.755 1.688-1.54 1.118l-3.37-2.448a1 1 0 00-1.176 0l-3.37 2.448c-.784.57-1.838-.197-1.539-1.118l1.286-3.955a1 1 0 00-.364-1.118L2.075 9.382c-.783-.57-.38-1.81.588-1.81h4.162a1 1 0 00.95-.69l1.286-3.955z"/>
             </svg>
@@ -636,7 +759,10 @@ $editingReviewId = request()->query('edit'); // Ambil ID dari query param ?edit=
 @if($allReviews->count())
 <div class="space-y-4 ">
   @foreach($allReviews as $booking)
-  <div class="card shadow-md bg-gray-100 p-4" x-data="{ editing: false }">
+  <div class="card shadow-md bg-gray-100 p-4" 
+           x-data="{ editing: false }"
+           data-animate="fadeInUp"
+           data-animate-delay="{{ ($index % 3) * 100 }}ms">
       <div class="flex justify-between items-start">
         <div class="flex items-center space-x-3">
           <div class="avatar">
@@ -717,7 +843,7 @@ $editingReviewId = request()->query('edit'); // Ambil ID dari query param ?edit=
 
 
   {{-- Footer --}}
-  <footer class="footer sm:footer-horizontal bg-base-100 text-base-content p-10 mt-30">
+  <footer class="footer sm:footer-horizontal bg-base-100 text-base-content p-10 mt-30" id="contact">
     <nav>
       <i class="fa-solid fa-camera-retro text-3xl text-primary opacity-50"></i>
      <p class="text-gray-400 mt-3">Professional photo studio spaces <br>
@@ -808,48 +934,6 @@ $editingReviewId = request()->query('edit'); // Ambil ID dari query param ?edit=
       });
     }
   }
-
-  // Mobile Menu Functionality
-  const menuButton = document.getElementById('mobile-menu-button');
-  const mobileMenu = document.getElementById('mobile-menu');
-  
-  // Define icons first
-  const menuIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
-  const closeIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
-
-  if (menuButton && mobileMenu) {
-    const icon = menuButton.querySelector('svg');
-    
-    menuButton.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const isHidden = mobileMenu.classList.toggle('hidden');
-      
-      // Update icon only if exists
-      if (icon) {
-        icon.innerHTML = isHidden ? menuIcon : closeIcon;
-      }
-    });
-
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!mobileMenu.contains(e.target) && !menuButton.contains(e.target)) {
-        mobileMenu.classList.add('hidden');
-        if (icon) {
-          icon.innerHTML = menuIcon;
-        }
-      }
-    });
-
-    // Close on escape key
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
-        mobileMenu.classList.add('hidden');
-        if (icon) {
-          icon.innerHTML = menuIcon;
-        }
-      }
-    });
-  }
 });
   </script>  
 
@@ -867,6 +951,104 @@ $editingReviewId = request()->query('edit'); // Ambil ID dari query param ?edit=
     });
   }
 </script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    // Intersection Observer for scroll animations
+    const animateElements = document.querySelectorAll('[data-animate]');
+    
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const element = entry.target;
+          const animation = element.getAttribute('data-animate');
+          const delay = element.getAttribute('data-animate-delay') || '0';
+          
+          // Apply the animation class after the specified delay
+          setTimeout(() => {
+            element.classList.add(`animate-${animation}`);
+            
+            // Remove the attribute to prevent re-animation if needed
+            element.removeAttribute('data-animate');
+          }, parseInt(delay));
+          
+          // Stop observing if we don't want to animate again
+          observer.unobserve(element);
+        }
+      });
+    }, {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    });
+
+    // Observe all elements with data-animate attribute
+    animateElements.forEach(element => {
+      observer.observe(element);
+    });
+
+    // Additional animation for hero section image
+    const heroImage = document.querySelector('.hero-content img');
+    if (heroImage) {
+      setTimeout(() => {
+        heroImage.classList.add('animate-slideInRight');
+      }, 300);
+    }
+  });
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Mobile Menu Functionality
+  const menuButton = document.getElementById('mobile-menu-button');
+  const mobileMenu = document.getElementById('mobile-menu');
+  
+  if (menuButton && mobileMenu) {
+    const icon = menuButton.querySelector('svg');
+    const menuIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>';
+    const closeIcon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>';
+    
+    menuButton.addEventListener('click', function() {
+      const isHidden = mobileMenu.classList.toggle('hidden');
+      
+      // Toggle between menu and close icon
+      if (icon) {
+        icon.innerHTML = isHidden ? menuIcon : closeIcon;
+      }
+    });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!mobileMenu.contains(e.target) && !menuButton.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
+        if (icon) {
+          icon.innerHTML = menuIcon;
+        }
+      }
+    });
+
+    // Close on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && !mobileMenu.classList.contains('hidden')) {
+        mobileMenu.classList.add('hidden');
+        if (icon) {
+          icon.innerHTML = menuIcon;
+        }
+      }
+    });
+  }
+
+  // Theme switcher functionality (for both desktop and mobile)
+  const themeSwitchers = document.querySelectorAll('#themeSwitcher, #themeSwitcherMobile');
+  themeSwitchers.forEach(switcher => {
+    switcher.addEventListener('change', function() {
+      document.documentElement.setAttribute('data-theme', this.value);
+    });
+  });
+});
+</script>
+
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
 </body>

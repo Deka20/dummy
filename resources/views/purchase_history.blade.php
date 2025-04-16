@@ -25,6 +25,45 @@
         from { opacity: 1; transform: translateY(0); }
         to { opacity: 0; transform: translateY(10px); }
     }
+    /* Custom styles for mobile cards */
+    .booking-card {
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background-color: white;
+    }
+    .booking-card-header {
+        border-bottom: 1px solid #e5e7eb;
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .booking-detail {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.5rem;
+    }
+    .booking-detail-label {
+        font-weight: 500;
+        color: #4b5563;
+    }
+    .status-badge {
+        display: inline-block;
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.25rem;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    @media (min-width: 1024px) {
+        .booking-card {
+            display: none;
+        }
+    }
+    @media (max-width: 1023px) {
+        .table-container {
+            display: none;
+        }
+    }
 </style>
 </head>
 <body>
@@ -164,7 +203,7 @@
 
     <div id="toast-container" class="toast toast-top toast-end"></div>
     <div class="container mx-auto p-4 max-w-7xl">
-        <h1 class="text-2xl font-bold mb-6">Riwayat Reservasi Studio Anda</h1>
+        <h1 class="text-xl md:text-2xl font-bold mb-4 md:mb-6">Riwayat Reservasi Studio Anda</h1>
         
         @if($bookings->isEmpty())
             <div class="alert alert-info shadow-lg">
@@ -176,7 +215,8 @@
                 </div>
             </div>
         @else
-            <div class="bg-gray-200 rounded-lg shadow overflow-hidden">
+            {{-- Desktop Table --}}
+            <div class="table-container bg-gray-200 rounded-lg shadow overflow-hidden">
                 <div class="overflow-x-auto">
                     <table class="table w-full">
                         <thead class="">
@@ -252,6 +292,76 @@
                     {{ $bookings->links() }}
                 </div>
             </div>
+
+            {{-- Mobile Cards --}}
+            <div class="booking-cards lg:hidden space-y-4">
+                @foreach($bookings as $booking)
+                <div class="booking-card" data-booking-id="{{ $booking->id }}">
+                    <div class="booking-card-header flex justify-between items-center">
+                        <div>
+                            <span class="font-bold">#{{ $booking->booking_id }}</span>
+                            @if($booking->studio)
+                                <div class="font-medium">{{ $booking->studio->nama }}</div>
+                            @else
+                                <span class="text-gray-400">Studio tidak tersedia</span>
+                            @endif
+                        </div>
+                        @php
+                            $statusClass = [
+                                'pending' => 'bg-yellow-100 text-yellow-800',
+                                'confirmed' => 'bg-green-100 text-green-800',
+                                'canceled' => 'bg-red-100 text-red-800',
+                                'completed' => 'bg-blue-100 text-blue-800'
+                            ][$booking->status] ?? 'bg-gray-100 text-gray-800';
+                        @endphp
+                        <span class="status-badge {{ $statusClass }}">{{ ucfirst($booking->status) }}</span>
+                    </div>
+                    
+                    <div class="booking-details">
+                        <div class="booking-detail">
+                            <span class="booking-detail-label">Tanggal:</span>
+                            <span>{{ $booking->tanggal_reservasi->format('d M Y') }}</span>
+                        </div>
+                        <div class="booking-detail">
+                            <span class="booking-detail-label">Waktu:</span>
+                            <span>{{ $booking->waktu_reservasi->format('H:i') }}</span>
+                        </div>
+                        <div class="booking-detail">
+                            <span class="booking-detail-label">Durasi:</span>
+                            <span>{{ $booking->durasi_jam }} jam</span>
+                        </div>
+                        <div class="booking-detail">
+                            <span class="booking-detail-label">Jumlah Orang:</span>
+                            <span>{{ $booking->jumlah_pelanggan }} orang</span>
+                        </div>
+                        <div class="booking-detail">
+                            <span class="booking-detail-label">Total Harga:</span>
+                            <span>Rp {{ number_format($booking->total_harga, 0, ',', '.') }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="booking-actions flex justify-end gap-2 pt-3">
+                        <a href="{{ route('show', $booking->id) }}" 
+                           class="btn btn-sm btn-ghost text-info hover:bg-info/20"
+                           title="Detail">
+                            <i class="fas fa-eye mr-1"></i> Detail
+                        </a>
+                        @if($booking->status == 'pending')
+                        <button class="btn btn-sm btn-ghost text-error hover:bg-error/20 cancel-booking" 
+                                data-booking-id="{{ $booking->id }}"
+                                title="Batalkan">
+                            <i class="fas fa-times mr-1"></i> Batalkan
+                        </button>
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+
+                <!-- Pagination for mobile -->
+                <div class="flex justify-center pt-4">
+                    {{ $bookings->links() }}
+                </div>
+            </div>
         @endif
     </div>
     
@@ -267,22 +377,22 @@
       </div>
     </dialog>
     
-    <!-- DaisyUI Toast for Error -->
-    <div class="toast toast-top toast-end hidden" id="error-toast">
-      <div class="alert alert-error">
-        <span>Gagal membatalkan reservasi.</span>
-      </div>
-    </div>
-    
     <script>
-        // Deklarasi elemen modal dan variabel
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        mobileMenuButton.addEventListener('click', function() {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Booking cancellation functionality
         const cancelModal = document.getElementById('cancel-modal');
         const confirmCancelBtn = document.getElementById('confirm-cancel');
         let currentBookingId = null;
     
-        // Fungsi utama untuk inisialisasi
         document.addEventListener('DOMContentLoaded', function() {
-            // Set event listener untuk semua tombol cancel
+            // Set event listener for all cancel buttons (both in table and cards)
             document.querySelectorAll('.cancel-booking').forEach(button => {
                 button.addEventListener('click', function() {
                     currentBookingId = this.dataset.bookingId;
@@ -290,16 +400,13 @@
                 });
             });
     
-            // Event listener untuk tombol konfirmasi cancel
             confirmCancelBtn.addEventListener('click', requestCancelBooking);
         });
     
-        // Fungsi untuk memproses pembatalan booking
         async function requestCancelBooking() {
             if (!currentBookingId) return;
     
             try {
-                // Tampilkan loading state
                 confirmCancelBtn.disabled = true;
                 confirmCancelBtn.innerHTML = '<span class="loading loading-spinner"></span> Memproses...';
     
@@ -319,7 +426,6 @@
                 }
     
                 if (data.success) {
-                    // Update UI
                     updateBookingStatus(currentBookingId, 'request_cancel');
                     disableCancelButton(currentBookingId);
                     showToast('success', data.message);
@@ -330,41 +436,54 @@
                 console.error('Error:', error);
                 showToast('error', error.message);
             } finally {
-                // Reset modal dan tombol
                 confirmCancelBtn.disabled = false;
                 confirmCancelBtn.textContent = 'Ya, Batalkan';
                 cancelModal.close();
             }
         }
     
-        // Fungsi untuk update status di UI
         function updateBookingStatus(bookingId, newStatus) {
-            const row = document.querySelector(`tr[data-booking-id="${bookingId}"]`);
-            if (!row) return;
-    
-            // Update badge status
-            const statusBadge = row.querySelector('.status-badge');
-            if (statusBadge) {
-                statusBadge.className = `badge ${getStatusClass(newStatus)} gap-2 status-badge`;
-                statusBadge.textContent = formatStatusText(newStatus);
+            // Update table row if exists
+            const tableRow = document.querySelector(`tr[data-booking-id="${bookingId}"]`);
+            if (tableRow) {
+                const statusBadge = tableRow.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.className = `badge ${getStatusClass(newStatus)} gap-2 status-badge`;
+                    statusBadge.textContent = formatStatusText(newStatus);
+                }
             }
-    
-            // Update data attribute jika diperlukan
-            row.dataset.bookingStatus = newStatus;
+            
+            // Update card if exists
+            const card = document.querySelector(`.booking-card[data-booking-id="${bookingId}"]`);
+            if (card) {
+                const statusBadge = card.querySelector('.status-badge');
+                if (statusBadge) {
+                    statusBadge.className = `status-badge ${getMobileStatusClass(newStatus)}`;
+                    statusBadge.textContent = formatStatusText(newStatus);
+                }
+            }
         }
     
-        // Fungsi untuk menonaktifkan tombol cancel setelah request
         function disableCancelButton(bookingId) {
-            const cancelBtn = document.querySelector(`button[data-booking-id="${bookingId}"]`);
-            if (cancelBtn) {
-                cancelBtn.disabled = true;
-                cancelBtn.innerHTML = '<i class="fas fa-check"></i> Dibatalkan';
-                cancelBtn.classList.remove('btn-error');
-                cancelBtn.classList.add('btn-disabled');
+            // Disable in table
+            const tableCancelBtn = document.querySelector(`tr[data-booking-id="${bookingId}"] .cancel-booking`);
+            if (tableCancelBtn) {
+                tableCancelBtn.disabled = true;
+                tableCancelBtn.innerHTML = '<i class="fas fa-check"></i> Dibatalkan';
+                tableCancelBtn.classList.remove('btn-error');
+                tableCancelBtn.classList.add('btn-disabled');
+            }
+            
+            // Disable in card
+            const cardCancelBtn = document.querySelector(`.booking-card[data-booking-id="${bookingId}"] .cancel-booking`);
+            if (cardCancelBtn) {
+                cardCancelBtn.disabled = true;
+                cardCancelBtn.innerHTML = '<i class="fas fa-check mr-1"></i> Dibatalkan';
+                cardCancelBtn.classList.remove('text-error');
+                cardCancelBtn.classList.add('text-gray-400', 'cursor-not-allowed');
             }
         }
     
-        // Fungsi helper untuk class status
         function getStatusClass(status) {
             const statusClasses = {
                 'pending': 'badge-warning',
@@ -375,8 +494,18 @@
             };
             return statusClasses[status] || 'badge-secondary';
         }
+        
+        function getMobileStatusClass(status) {
+            const statusClasses = {
+                'pending': 'bg-yellow-100 text-yellow-800',
+                'confirmed': 'bg-green-100 text-green-800',
+                'request_cancel': 'bg-blue-100 text-blue-800',
+                'canceled': 'bg-red-100 text-red-800',
+                'completed': 'bg-blue-100 text-blue-800'
+            };
+            return statusClasses[status] || 'bg-gray-100 text-gray-800';
+        }
     
-        // Fungsi helper untuk format teks status
         function formatStatusText(status) {
             const statusTexts = {
                 'pending': 'Pending',
@@ -388,39 +517,36 @@
             return statusTexts[status] || status;
         }
     
-        // Fungsi untuk menampilkan toast notifikasi
         function showToast(type, message) {
-    // Buat container toast jika belum ada
-    let toastContainer = document.getElementById('toast-container');
-    if (!toastContainer) {
-        toastContainer = document.createElement('div');
-        toastContainer.id = 'toast-container';
-        toastContainer.className = 'fixed top-4 left-0 right-0 flex justify-center z-50';
-        document.body.appendChild(toastContainer);
-    }
+            let toastContainer = document.getElementById('toast-container');
+            if (!toastContainer) {
+                toastContainer = document.createElement('div');
+                toastContainer.id = 'toast-container';
+                toastContainer.className = 'fixed top-4 left-0 right-0 flex justify-center z-50';
+                document.body.appendChild(toastContainer);
+            }
 
-    const toastId = `toast-${Date.now()}`;
-    
-    const toast = document.createElement('div');
-    toast.id = toastId;
-    toast.className = `alert alert-${type} shadow-lg mb-2 animate-fade-in max-w-md w-full`;
-    toast.innerHTML = `
-        <div class="flex-1">
-            <span>${message}</span>
-        </div>
-        <button class="btn btn-sm btn-ghost" onclick="document.getElementById('${toastId}').remove()">
-            <i class="fas fa-times"></i>
-        </button>
-    `;
-    
-    toastContainer.appendChild(toast);
-    
-    // Auto remove setelah 5 detik
-    setTimeout(() => {
-        toast.classList.add('animate-fade-out');
-        setTimeout(() => toast.remove(), 300);
-    }, 5000);
-}
+            const toastId = `toast-${Date.now()}`;
+            
+            const toast = document.createElement('div');
+            toast.id = toastId;
+            toast.className = `alert alert-${type} shadow-lg mb-2 animate-fade-in max-w-md w-full`;
+            toast.innerHTML = `
+                <div class="flex-1">
+                    <span>${message}</span>
+                </div>
+                <button class="btn btn-sm btn-ghost" onclick="document.getElementById('${toastId}').remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('animate-fade-out');
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
     </script>
 
 <script>
@@ -436,6 +562,6 @@
         localStorage.setItem('theme', selected);
       });
     }
-  </script>
+</script>
 </body>
 </html>

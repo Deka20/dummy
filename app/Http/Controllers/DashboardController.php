@@ -20,8 +20,13 @@ class DashboardController extends Controller
                   ->withSum('bookings', 'total_harga')
                   ->orderBy('bookings_count', 'desc')
                   ->get();
+
+        $newOrdersCount = Booking::where('status', 'pending')->count();
         
-        return view('dashboard.studios', compact('studios'));
+        return view('dashboard.studios', [
+            'studios' => $studios,
+            'newOrdersCount' => $newOrdersCount,
+        ]);
     }
 
     public function dashboard()
@@ -29,35 +34,43 @@ class DashboardController extends Controller
     // Hitung total pelanggan
     $totalCustomer = User::count();
     
-    // Ambil data booking dengan pagination
-    $bookings = Booking::with('user')
-        ->orderBy('created_at', 'desc')
-        ->paginate(10); // Sesuaikan angka sesuai kebutuhan
+    $newOrdersCount = Booking::whereIn('status', ['pending', 'waiting_verification'])->count();
     
-    // Kirim semua variabel yang diperlukan ke view
+    // Ambil data booking terbaru dengan pagination
+    $recentBookings = Booking::with('user')
+        ->orderBy('created_at', 'desc')
+        ->paginate(10);
+        $unverifiedPaymentsCount = Booking::where('status', 'waiting_verification')->count();
+    
     return view('dashboard.index', [
         'totalCustomer' => $totalCustomer,
-        'recentBookings' => $bookings // Sesuaikan dengan nama variabel di view
+        'newOrdersCount' => $newOrdersCount,
+        'recentBookings' => $recentBookings,
+        'unverifiedPaymentsCount' => $unverifiedPaymentsCount
     ]);
-    
-    // Atau bisa menggunakan compact():
-    // return view('dashboard.index', compact('totalCustomer', 'bookings'));
 }
 
     public function customers()
     {
         
         $customers = User::all(); // Jika menggunakan model Customer
+        $newOrdersCount = Booking::where('status', 'pending')->count();
 
-        return view('dashboard.customers'); // Menampilkan view 'dashboard.customers'
+        return view('dashboard.customers', [
+            'newOrdersCount' => $newOrdersCount,
+        ]); // Menampilkan view 'dashboard.customers'
     }
 
     public function settings()
     {
         // Fetch portfolio items ordered by their display order
         $portfolioItems = Portfolio::orderBy('order')->get();
+        $newOrdersCount = Booking::where('status', 'pending')->count();
         
-        return view('dashboard.settings', compact('portfolioItems'));
+        return view('dashboard.settings', [
+            'portfolioItems' => $portfolioItems,
+            'newOrdersCount' => $newOrdersCount,
+        ]);
     }
 
     // In PortfolioController.php, modify the save method:
@@ -167,4 +180,28 @@ public function save(Request $request)
         Portfolio::where('order', '>', $deletedOrder)
             ->decrement('order');
     }
+
+    public function payments()
+{
+    $bookings = Booking::whereNotNull('payment_proof')
+                ->with(['user', 'studio'])
+                ->latest()
+                ->paginate(10);
+
+    $unverifiedPaymentsCount = Booking::where('status', 'waiting_verification')->count();
+
+    return view('dashboard.payments', compact('bookings', 'unverifiedPaymentsCount'));
+}
+
+public function verifyPayment(Booking $booking)
+{
+    $booking->update(['status' => 'confirmed']);
+    return back()->with('success', 'Pembayaran berhasil diverifikasi');
+}
+
+public function rejectPayment(Booking $booking)
+{
+    $booking->update(['status' => 'rejected']);
+    return back()->with('success', 'Pembayaran telah ditolak');
+}
 }

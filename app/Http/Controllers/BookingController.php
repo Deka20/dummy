@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class BookingController extends Controller
@@ -65,7 +66,7 @@ public function create(Request $request)
         'waktu_reservasi' => $validated['waktu_reservasi'],
         'durasi_jam' => $validated['durasi_jam'],
         'total_harga' => $totalHarga,
-        'status' => 'pending'
+        'status' => 'pending',
     ]);
 
     return response()->json([
@@ -113,7 +114,7 @@ public function store(Request $request)
         'waktu_reservasi' => $validated['waktu_reservasi'],
         'durasi_jam' => $validated['durasi_jam'],
         'total_harga' => $totalHarga,
-        'status' => 'pending'
+        'status' => 'pending',
     ]);
 
     return redirect()->route('bookings.index')
@@ -246,6 +247,45 @@ public function destroy(Booking $booking)
     ]);
 
     return redirect()->route('index')->with('success', 'Review deleted.');
+}
+
+public function uploadPayment(Request $request, Booking $booking)
+{
+    $validated = $request->validate([
+        'payment_proof' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048',
+        'sender_account' => 'required|string|max:255',
+        'payment_date' => 'required|date|before_or_equal:today',
+    ]);
+
+    try {
+        // Simpan file ke storage
+        $path = $request->file('payment_proof')->store('payment-proofs', 'public');
+        
+        // Pastikan path tidak null
+        if (!$path) {
+            throw new \Exception("Gagal menyimpan file ke storage");
+        }
+
+        // Update database
+        $updated = $booking->update([
+            'payment_proof' => $path,
+            'sender_account' => $validated['sender_account'],
+            'payment_date' => $validated['payment_date'],
+            'payment_uploaded_at' => now(),
+            'status' => 'waiting_verification'
+        ]);
+
+        if (!$updated) {
+            // Jika gagal update database, hapus file yang sudah diupload
+            Storage::disk('public')->delete($path);
+            throw new \Exception("Gagal menyimpan data ke database");
+        }
+
+        return back()->with('success', 'Bukti pembayaran berhasil diupload!');
+
+    } catch (\Exception $e) {
+        return back()->with('error', 'Error: ' . $e->getMessage())->withInput();
+    }
 }
 
 public function updateBooking(Request $request, Booking $booking)

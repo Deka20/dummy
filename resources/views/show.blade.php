@@ -262,8 +262,6 @@
                 // Since stars are in reverse order (5 to 1), we need to check differently
                 star.checked = parseInt(star.value) <= selectedValue;
             });
-            
-            console.log("Selected rating: " + selectedValue); // Debug
         });
     });
 
@@ -316,11 +314,117 @@
      Ubah Reservasi
  </a>
  
-                @elseif($booking->status == 'confirmed')
-                <button class="btn btn-warning gap-2">
-                    <i class="fas fa-question-circle"></i>
-                    Butuh Bantuan?
-                </button>
+                <!-- Tambahkan setelah bagian Price dan sebelum Rating and Review Section -->
+
+                @elseif($booking->status === 'confirmed')
+                <!-- Payment Section -->
+                <div class="border-t pt-6 mt-6">
+                    <h3 class="text-lg font-semibold mb-4">Pembayaran</h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                        <!-- QRIS Payment -->
+                        <div class="bg-base-200 p-4 rounded-lg">
+                            <h4 class="font-medium mb-3">Bayar dengan QRIS</h4>
+                            <div class="flex flex-col items-center">
+                                <!-- QR Code Image -->
+                                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRe76JYNeD26O51RIlTeIFcNNwfJBBTzyuRoA&s" alt="QRIS Payment Code" class="w-48 h-48 mb-3 border border-gray-300">
+                                
+                                <!-- Payment Instructions -->
+                                <div class="text-sm text-center">
+                                    <p class="mb-2">1. Buka aplikasi mobile banking/e-wallet Anda</p>
+                                    <p class="mb-2">2. Scan QR code di atas</p>
+                                    <p class="mb-2">3. Konfirmasi pembayaran</p>
+                                    <p class="font-medium">Total: Rp {{ number_format($booking->total_harga, 0, ',', '.') }}</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Payment Proof Upload -->
+                        <div class="bg-base-200 p-4 rounded-lg">
+                            <h4 class="font-medium mb-3">Upload Bukti Pembayaran</h4>
+                            
+                            @if(!$booking->payment_proof)
+                            <form action="{{ route('bookings.upload-payment', $booking->id) }}" method="POST" enctype="multipart/form-data">
+                                @csrf
+                                
+                                <div class="mb-4">
+                                    <label class="block mb-2 text-sm">File Bukti Pembayaran</label>
+                                    <input type="file" name="payment_proof" class="file-input file-input-bordered w-full" accept="image/*,.pdf" required>
+                                    <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG, atau PDF (maks. 2MB)</p>
+                                    @error('payment_proof')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="block mb-2 text-sm">Nama Rekening Pengirim</label>
+                                    <input type="text" name="sender_account" class="input input-bordered w-full" value="{{ old('sender_account') }}" required>
+                                    @error('sender_account')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="block mb-2 text-sm">Tanggal Transfer</label>
+                                    <input type="date" name="payment_date" class="input input-bordered w-full" value="{{ old('payment_date', now()->format('Y-m-d')) }}" required max="{{ now()->format('Y-m-d') }}">
+                                    @error('payment_date')
+                                        <p class="text-red-500 text-sm mt-1">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary w-full gap-2">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Bukti Pembayaran
+                                </button>
+                            </form>
+                            @else
+                            <div class="alert alert-success mb-4">
+                                <div class="flex items-center gap-2">
+                                    <i class="fas fa-check-circle"></i>
+                                    <span>Bukti pembayaran sudah diupload</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white p-3 rounded-lg border border-gray-200 mb-4">
+                                @if(pathinfo($booking->payment_proof, PATHINFO_EXTENSION) === 'pdf')
+                                    <embed src="{{ asset('storage/' . $booking->payment_proof) }}" type="application/pdf" width="100%" height="200px">
+                                @else
+                                    <img src="{{ asset('storage/' . $booking->payment_proof) }}" alt="Bukti Pembayaran" class="w-full rounded-lg">
+                                @endif
+                            </div>
+                            
+                            <div class="space-y-2 text-sm">
+                                <p><strong>Nama Rekening:</strong> {{ $booking->sender_account ?? 'Belum diisi' }}</p>
+                                <p><strong>Tanggal Transfer:</strong> 
+                                    {{ $booking->payment_date ? \Carbon\Carbon::parse($booking->payment_date)->format('d F Y') : 'Belum diisi' }}
+                                </p>
+                                <p><strong>Waktu Upload:</strong> 
+                                    {{ $booking->payment_uploaded_at ? $booking->payment_uploaded_at->format('d F Y H:i') : 'Belum diupload' }}
+                                </p>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Status -->
+                    <div class="alert alert-info">
+                        <div class="flex items-center gap-2">
+                            <i class="fas fa-info-circle"></i>
+                            <span>
+                                @if($booking->payment_proof)
+                                    Bukti pembayaran sedang diverifikasi. Harap tunggu konfirmasi dari admin.
+                                @else
+                                    Silakan lakukan pembayaran dan upload bukti transfer 
+                                    @if($booking->expired_payment_at)
+                                        sebelum {{ $booking->expired_payment_at->format('d F Y H:i') }}
+                                    @else
+                                        segera
+                                    @endif
+                                @endif
+                            </span>
+                        </div>
+                    </div>
+                </div>
                 @endif
             </div>
         </div>

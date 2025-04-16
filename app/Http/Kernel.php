@@ -20,6 +20,7 @@ class Kernel extends HttpKernel
         TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
     ];
+    
 
     protected $middlewareGroups = [
         'web' => [
