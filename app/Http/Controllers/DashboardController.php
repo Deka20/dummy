@@ -204,4 +204,71 @@ public function rejectPayment(Booking $booking)
     $booking->update(['status' => 'rejected']);
     return back()->with('success', 'Pembayaran telah ditolak');
 }
+
+public function earnings(Request $request)
+{
+    // Hitung total penghasilan
+    $totalEarnings = Booking::where('status', 'confirmed')->sum('total_harga');
+    
+    // Hitung penghasilan bulan ini
+    $monthlyEarnings = Booking::where('status', 'confirmed')
+        ->whereMonth('created_at', now()->month)
+        ->whereYear('created_at', now()->year)
+        ->sum('total_harga');
+    
+    // Hitung penghasilan minggu ini
+    $weeklyEarnings = Booking::where('status', 'confirmed')
+        ->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()])
+        ->sum('total_harga');
+    
+    // Hitung transaksi hari ini
+    $todayBookingsCount = Booking::where('status', 'confirmed')
+        ->whereDate('created_at', today())
+        ->count();
+    
+    // Filter tahun dan studio
+    $selectedYear = $request->input('year', date('Y'));
+    $selectedStudio = $request->input('studio', null);
+    
+    // Dapatkan tahun yang tersedia
+    $availableYears = Booking::selectRaw('YEAR(created_at) as year')
+        ->groupBy('year')
+        ->orderBy('year', 'desc')
+        ->pluck('year');
+    
+    // Data untuk grafik bulanan
+    $monthlyData = [];
+    $monthlyLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+    
+    for ($i = 1; $i <= 12; $i++) {
+        $query = Booking::where('status', 'confirmed')
+            ->whereMonth('created_at', $i)
+            ->whereYear('created_at', $selectedYear);
+            
+        if ($selectedStudio) {
+            $query->where('studio_id', $selectedStudio);
+        }
+        
+        $monthlyData[] = $query->sum('total_harga');
+    }
+    
+    // Daftar studio untuk filter
+    $studios = Studio::all();
+    
+    $newOrdersCount = Booking::whereIn('status', ['pending', 'waiting_verification'])->count();
+    
+    return view('dashboard.earnings', [
+        'totalEarnings' => $totalEarnings,
+        'monthlyEarnings' => $monthlyEarnings,
+        'weeklyEarnings' => $weeklyEarnings,
+        'todayBookingsCount' => $todayBookingsCount,
+        'monthlyData' => $monthlyData,
+        'monthlyLabels' => $monthlyLabels,
+        'availableYears' => $availableYears,
+        'selectedYear' => $selectedYear,
+        'studios' => $studios,
+        'selectedStudio' => $selectedStudio,
+        'newOrdersCount' => $newOrdersCount,
+    ]);
+}
 }

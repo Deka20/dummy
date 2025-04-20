@@ -128,3 +128,5 @@ Route::post('/dashboard/payments/{booking}/verify', [DashboardController::class,
 
 Route::post('/dashboard/payments/{booking}/reject', [DashboardController::class, 'rejectPayment'])
     ->name('dashboard.payments.reject');
+
+    Route::get('/dashboard/earnings', [DashboardController::class, 'earnings'])->name('dashboard.earnings');
